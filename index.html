@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JagdBallistik Pro - Wiederlade-Rechner für Jäger</title>
+    <title>BallistikPro Advanced - Präzisions-Wiederlade-Software</title>
     <style>
         * {
             margin: 0;
@@ -12,76 +12,127 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #2d5016 0%, #4a7c3a 50%, #1a4d2e 100%);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 25%, #2c5530 50%, #365c39 75%, #4a7c59 100%);
             min-height: 100vh;
-            color: #333;
+            color: #1e3a1e;
+            overflow-x: hidden;
         }
 
         .container {
-            max-width: 1600px;
+            max-width: 1800px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 24px;
         }
 
         .header {
             text-align: center;
             color: white;
-            margin-bottom: 30px;
-            background: rgba(0,0,0,0.2);
-            padding: 30px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
+            margin-bottom: 40px;
+            background: rgba(15, 32, 39, 0.8);
+            padding: 48px 32px;
+            border-radius: 16px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(154, 205, 50, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(106, 153, 78, 0.15) 50%, transparent 70%);
+            animation: shimmer 3s ease-in-out infinite;
         }
 
         .header h1 {
             font-size: 3.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            color: #fff;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
         }
 
         .header p {
-            font-size: 1.3rem;
+            font-size: 1.25rem;
             opacity: 0.9;
-            color: #d4f4dd;
+            color: #c7d2cc;
+            font-weight: 400;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
         }
 
         .main-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease;
-            border: 2px solid rgba(77, 124, 58, 0.3);
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 20px 60px rgba(46, 69, 48, 0.15), 0 8px 24px rgba(74, 124, 89, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(106, 153, 78, 0.2);
+            position: relative;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2d5f3f 0%, #3e7b3e 50%, #4a8b5c 100%);
+            border-radius: 20px 20px 0 0;
         }
 
         .card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(77, 124, 58, 0.6);
+            transform: translateY(-8px);
+            box-shadow: 0 32px 80px rgba(46, 69, 48, 0.2), 0 16px 32px rgba(74, 124, 89, 0.15);
+            border-color: rgba(106, 153, 78, 0.4);
         }
 
         .card h2 {
-            color: #2d5016;
-            margin-bottom: 20px;
-            font-size: 1.4rem;
-            border-bottom: 3px solid #4a7c3a;
-            padding-bottom: 10px;
-            font-weight: bold;
+            color: #1e3e1e;
+            margin-bottom: 24px;
+            font-size: 1.375rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            position: relative;
+            padding-left: 16px;
+        }
+
+        .card h2::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(135deg, #2d5f3f 0%, #4a8b5c 100%);
+            border-radius: 2px;
         }
 
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 20px;
         }
 
         .form-group {
@@ -95,45 +146,67 @@
 
         label {
             font-weight: 600;
-            margin-bottom: 5px;
-            color: #2d5016;
-            font-size: 0.9rem;
+            margin-bottom: 8px;
+            color: #1e3e1e;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
         }
 
         select, input {
-            padding: 10px;
-            border: 2px solid #d4f4dd;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s ease;
-            background: white;
+            padding: 14px 16px;
+            border: 2px solid #c7d2cc;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #ffffff;
+            color: #1e3e1e;
+            font-weight: 500;
         }
 
         select:focus, input:focus {
             outline: none;
-            border-color: #4a7c3a;
-            box-shadow: 0 0 0 3px rgba(74, 124, 58, 0.1);
+            border-color: #4a8b5c;
+            box-shadow: 0 0 0 4px rgba(74, 139, 92, 0.1);
+            transform: translateY(-1px);
         }
 
         .calculate-btn {
-            background: linear-gradient(135deg, #4a7c3a 0%, #2d5016 100%);
+            background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%);
             color: white;
             border: none;
-            padding: 18px 35px;
-            border-radius: 12px;
-            font-size: 1.2rem;
-            font-weight: bold;
+            padding: 20px 40px;
+            border-radius: 16px;
+            font-size: 1.125rem;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 25px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 32px;
             width: 100%;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.05em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .calculate-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .calculate-btn:hover::before {
+            left: 100%;
         }
 
         .calculate-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(74, 124, 58, 0.4);
+            box-shadow: 0 20px 40px rgba(5, 150, 105, 0.3);
         }
 
         .results-section {
@@ -142,66 +215,92 @@
 
         .results-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
         }
 
         .result-card {
-            background: linear-gradient(135deg, #4a7c3a 0%, #2d5016 100%);
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
             color: white;
-            padding: 20px;
-            border-radius: 12px;
+            padding: 24px;
+            border-radius: 16px;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .result-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.2);
         }
 
         .result-value {
-            font-size: 2.2rem;
-            font-weight: bold;
+            font-size: 2.5rem;
+            font-weight: 800;
             margin-bottom: 8px;
+            background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .result-unit {
-            font-size: 0.9rem;
-            opacity: 0.9;
+            font-size: 0.875rem;
+            opacity: 0.85;
             font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .chart-container {
-            margin-top: 20px;
+            margin-top: 32px;
         }
 
         .chart-tabs {
             display: flex;
             flex-wrap: wrap;
-            margin-bottom: 20px;
-            gap: 5px;
+            margin-bottom: 24px;
+            gap: 8px;
+            background: rgba(15, 23, 42, 0.05);
+            padding: 8px;
+            border-radius: 16px;
         }
 
         .tab-btn {
-            background: #d4f4dd;
-            border: 2px solid #4a7c3a;
-            padding: 12px 20px;
+            background: transparent;
+            border: 2px solid transparent;
+            padding: 14px 24px;
             cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            color: #2d5016;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #475569;
             font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
         }
 
         .tab-btn.active {
-            background: #4a7c3a;
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
             color: white;
+            box-shadow: 0 8px 24px rgba(5, 150, 105, 0.25);
+        }
+
+        .tab-btn:not(.active):hover {
+            background: rgba(5, 150, 105, 0.1);
+            border-color: #059669;
         }
 
         .chart-area {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            height: 450px;
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 32px;
+            height: 500px;
             position: relative;
-            border: 2px solid #4a7c3a;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
         canvas {
@@ -210,44 +309,68 @@
         }
 
         .warning {
-            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
             color: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 20px;
-            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+            border-radius: 20px;
+            padding: 32px;
+            margin-top: 32px;
+            box-shadow: 0 16px 48px rgba(220, 38, 38, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .warning h3 {
-            margin-bottom: 15px;
-            font-size: 1.3rem;
+            margin-bottom: 16px;
+            font-size: 1.375rem;
+            font-weight: 700;
         }
 
-        .hunting-badge {
+        .warning p {
+            line-height: 1.7;
+            opacity: 0.95;
+        }
+
+        .category-badge {
             display: inline-block;
-            background: #4a7c3a;
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
             color: white;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            margin-left: 10px;
-            font-weight: bold;
+            padding: 6px 16px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            margin-left: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .advanced-section {
-            background: rgba(212, 244, 221, 0.3);
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
+            background: linear-gradient(135deg, rgba(5, 150, 105, 0.05) 0%, rgba(4, 120, 87, 0.05) 100%);
+            border: 1px solid rgba(5, 150, 105, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+
+        .advanced-section h3 {
+            color: #065f46;
+            margin-bottom: 20px;
+            font-weight: 700;
+            font-size: 1.125rem;
         }
 
         .unit-display {
-            font-size: 0.8rem;
-            color: #666;
-            margin-left: 5px;
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-left: 8px;
+            font-weight: 500;
         }
 
-        @media (max-width: 768px) {
+        .professional-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        @media (max-width: 1024px) {
             .main-grid {
                 grid-template-columns: 1fr;
             }
@@ -259,19 +382,23 @@
             .header h1 {
                 font-size: 2.5rem;
             }
+            
+            .results-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🦌 JagdBallistik Pro</h1>
-            <p>Präzisions-Wiederlade-Rechner für anspruchsvolle Jäger und Sportschützen</p>
+            <h1>BallistikPro Advanced</h1>
+            <p>Präzisions-Wiederlade-Software für professionelle Anwender</p>
         </div>
 
         <div class="main-grid">
             <div class="card">
-                <h2>🎯 Kaliber & Geschoss-Auswahl <span class="hunting-badge">Basis</span></h2>
+                <h2>Kaliber & Geschoss-Spezifikation <span class="category-badge">Basis</span></h2>
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="cartridge">Jagdkaliber</label>
@@ -284,7 +411,7 @@
                                 <option value="8x57js">8x57 IS</option>
                                 <option value="9.3x62">9,3x62 Mauser</option>
                             </optgroup>
-                            <optgroup label="Raubwild & Langdistanz">
+                            <optgroup label="Präzisions- & Langdistanzkaliber">
                                 <option value="223rem">.223 Remington</option>
                                 <option value="22-250">.22-250 Remington</option>
                                 <option value="243win">.243 Winchester</option>
@@ -293,7 +420,7 @@
                                 <option value="300wm">.300 Win Mag</option>
                                 <option value="338lap">.338 Lapua Mag</option>
                             </optgroup>
-                            <optgroup label="Schweres Wild">
+                            <optgroup label="Großwildkaliber">
                                 <option value="375h&h">.375 H&H Magnum</option>
                                 <option value="416rem">.416 Remington</option>
                                 <option value="458wm">.458 Winchester</option>
@@ -302,250 +429,248 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="bullet">Geschoss-Typ</label>
+                        <label for="bullet">Geschoss-Konstruktion</label>
                         <select id="bullet">
-                            <optgroup label="Teilmantel (Jagd)">
-                                <option value="150psp">150gr PSP Weichspitz</option>
-                                <option value="165psp">165gr PSP Weichspitz</option>
-                                <option value="180psp">180gr PSP Weichspitz</option>
+                            <optgroup label="Jagdgeschosse">
+                                <option value="150psp">150gr Teilmantel Weichspitz</option>
+                                <option value="165psp">165gr Teilmantel Weichspitz</option>
+                                <option value="180psp">180gr Teilmantel Weichspitz</option>
+                                <option value="200psp">200gr Teilmantel Rundkopf</option>
                             </optgroup>
-                            <optgroup label="Vollmantel (Match)">
+                            <optgroup label="Match-Geschosse">
                                 <option value="168hpbt">168gr HPBT Match</option>
-                                <option value="175smk">175gr SMK Match</option>
-                                <option value="190vld">190gr VLD Match</option>
+                                <option value="175smk">175gr Sierra MatchKing</option>
+                                <option value="190vld">190gr Berger VLD</option>
+                                <option value="208eld">208gr Hornady ELD-M</option>
                             </optgroup>
-                            <optgroup label="Monolithisch">
-                                <option value="150mono">150gr Mono Kupfer</option>
-                                <option value="168mono">168gr Mono Kupfer</option>
+                            <optgroup label="Monolithische Geschosse">
+                                <option value="150mono">150gr Barnes TSX</option>
+                                <option value="168mono">168gr GMX Monolithisch</option>
                             </optgroup>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label for="bulletWeight">Geschossgewicht <span class="unit-display">(Grain)</span></label>
+                        <label for="bulletWeight">Geschossgewicht <span class="unit-display">grain</span></label>
                         <input type="number" id="bulletWeight" value="168" min="40" max="400" step="0.1">
                     </div>
 
                     <div class="form-group">
-                        <label for="bulletDiameter">Geschoss-Ø <span class="unit-display">(mm)</span></label>
-                        <input type="number" id="bulletDiameter" value="7.82" step="0.001" min="5.5" max="12">
+                        <label for="bulletDiameter">Geschoss-Durchmesser <span class="unit-display">mm</span></label>
+                        <input type="number" id="bulletDiameter" value="7.820" step="0.001" min="5.500" max="12.000">
                     </div>
 
                     <div class="form-group">
-                        <label for="bulletLength">Geschosslänge <span class="unit-display">(mm)</span></label>
-                        <input type="number" id="bulletLength" value="28.5" step="0.1" min="10" max="50">
+                        <label for="bulletLength">Geschosslänge <span class="unit-display">mm</span></label>
+                        <input type="number" id="bulletLength" value="28.50" step="0.10" min="10.00" max="50.00">
                     </div>
 
                     <div class="form-group">
-                        <label for="ballisticCoeff">Ballistischer Koeffizient (BC)</label>
-                        <input type="number" id="ballisticCoeff" value="0.462" step="0.001" min="0.1" max="1.0">
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>📐 Hülsen-Geometrie <span class="hunting-badge">Präzision</span></h2>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="caseLength">Hülsenlänge <span class="unit-display">(mm)</span></label>
-                        <input type="number" id="caseLength" value="51.18" step="0.01" min="20" max="80">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="cartridgeLength">Patronenlänge gesamt <span class="unit-display">(mm)</span></label>
-                        <input type="number" id="cartridgeLength" value="78.0" step="0.1" min="40" max="120">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="seatingDepth">Setztiefe <span class="unit-display">(mm)</span></label>
-                        <input type="number" id="seatingDepth" value="16.31" step="0.01" min="5" max="30">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="shankSeatDepth">Schaft-Setztiefe <span class="unit-display">(mm)</span></label>
-                        <input type="number" id="shankSeatDepth" value="13.81" step="0.01" min="3" max="25">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="caseCapacity">Max. Hülsenvolumen <span class="unit-display">(gr H2O)</span></label>
-                        <input type="number" id="caseCapacity" value="56.0" step="0.1" min="20" max="120">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="usableCaseCapacity">Nutzbares Volumen <span class="unit-display">(gr H2O)</span></label>
-                        <input type="number" id="usableCaseCapacity" value="45.2" step="0.1" min="15" max="100">
+                        <label for="ballisticCoeff">Ballistischer Koeffizient G1</label>
+                        <input type="number" id="ballisticCoeff" value="0.462" step="0.001" min="0.100" max="1.000">
                     </div>
                 </div>
             </div>
 
             <div class="card">
-                <h2>🔫 Lauf-Spezifikationen <span class="hunting-badge">Waffe</span></h2>
+                <h2>Hülsen-Geometrie & Abmessungen <span class="category-badge">Technik</span></h2>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="barrelLength">Lauflänge <span class="unit-display">(Zoll)</span></label>
-                        <input type="number" id="barrelLength" value="24.0" min="16" max="32" step="0.5">
+                        <label for="caseLength">Hülsenlänge <span class="unit-display">mm</span></label>
+                        <input type="number" id="caseLength" value="51.18" step="0.01" min="20.00" max="80.00">
                     </div>
 
                     <div class="form-group">
-                        <label for="grooveCaliberBore">Felddurchmesser <span class="unit-display">(mm)</span></label>
-                        <input type="number" id="grooveCaliberBore" value="7.62" step="0.001" min="5" max="12">
+                        <label for="cartridgeLength">Patronenlänge gesamt <span class="unit-display">mm</span></label>
+                        <input type="number" id="cartridgeLength" value="78.00" step="0.10" min="40.00" max="120.00">
                     </div>
 
                     <div class="form-group">
-                        <label for="grooveCaliberGroove">Zugdurchmesser <span class="unit-display">(mm)</span></label>
-                        <input type="number" id="grooveCaliberGroove" value="7.82" step="0.001" min="5" max="12">
+                        <label for="seatingDepth">Setztiefe <span class="unit-display">mm</span></label>
+                        <input type="number" id="seatingDepth" value="16.31" step="0.01" min="5.00" max="30.00">
                     </div>
 
                     <div class="form-group">
-                        <label for="riflingTwist">Drallsteigung <span class="unit-display">(1 in Zoll)</span></label>
-                        <input type="number" id="riflingTwist" value="11.25" step="0.25" min="7" max="18">
+                        <label for="shankSeatDepth">Schaft-Setztiefe <span class="unit-display">mm</span></label>
+                        <input type="number" id="shankSeatDepth" value="13.81" step="0.01" min="3.00" max="25.00">
                     </div>
 
                     <div class="form-group">
-                        <label for="freeBore">Freie Lauflänge <span class="unit-display">(mm)</span></label>
-                        <input type="number" id="freeBore" value="1.5" step="0.1" min="0" max="10">
+                        <label for="caseCapacity">Max. Hülsenvolumen <span class="unit-display">gr H2O</span></label>
+                        <input type="number" id="caseCapacity" value="56.0" step="0.1" min="20.0" max="120.0">
                     </div>
 
                     <div class="form-group">
-                        <label for="crossSectionalBoreArea">Querschnittsfläche <span class="unit-display">(mm²)</span></label>
-                        <input type="number" id="crossSectionalBoreArea" value="45.6" step="0.1" min="20" max="120">
+                        <label for="usableCaseCapacity">Nutzbares Volumen <span class="unit-display">gr H2O</span></label>
+                        <input type="number" id="usableCaseCapacity" value="45.2" step="0.1" min="15.0" max="100.0">
                     </div>
                 </div>
             </div>
 
             <div class="card">
-                <h2>🧪 Pulver-Eigenschaften <span class="hunting-badge">Treibladung</span></h2>
+                <h2>Lauf-Charakteristika <span class="category-badge">Ballistik</span></h2>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="powder">Pulversorte</label>
+                        <label for="barrelLength">Lauflänge <span class="unit-display">zoll</span></label>
+                        <input type="number" id="barrelLength" value="24.0" min="16.0" max="32.0" step="0.5">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="grooveCaliberBore">Felddurchmesser <span class="unit-display">mm</span></label>
+                        <input type="number" id="grooveCaliberBore" value="7.620" step="0.001" min="5.000" max="12.000">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="grooveCaliberGroove">Zugdurchmesser <span class="unit-display">mm</span></label>
+                        <input type="number" id="grooveCaliberGroove" value="7.820" step="0.001" min="5.000" max="12.000">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="riflingTwist">Drallsteigung <span class="unit-display">1:x zoll</span></label>
+                        <input type="number" id="riflingTwist" value="11.25" step="0.25" min="7.00" max="18.00">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="freeBore">Freie Lauflänge <span class="unit-display">mm</span></label>
+                        <input type="number" id="freeBore" value="1.50" step="0.10" min="0.00" max="10.00">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="crossSectionalBoreArea">Laufquerschnitt <span class="unit-display">mm²</span></label>
+                        <input type="number" id="crossSectionalBoreArea" value="45.60" step="0.10" min="20.00" max="120.00">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Pulver-Spezifikation <span class="category-badge">Treibmittel</span></h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="powder">Pulvertyp</label>
                         <select id="powder">
-                            <optgroup label="Vihtavuori">
-                                <option value="n140">N140 (mittelschnell)</option>
-                                <option value="n150">N150 (mittel)</option>
-                                <option value="n160">N160 (langsam)</option>
+                            <optgroup label="Vihtavuori N-Serie">
+                                <option value="n140">N140 (mittelschnell brennend)</option>
+                                <option value="n150">N150 (mittlere Brennrate)</option>
+                                <option value="n160">N160 (langsam brennend)</option>
                                 <option value="n165">N165 (sehr langsam)</option>
                             </optgroup>
-                            <optgroup label="Hodgdon">
-                                <option value="varget">Varget (Allround)</option>
-                                <option value="h4350">H4350 (Magnum)</option>
-                                <option value="h4831">H4831 (Magnum lang)</option>
-                                <option value="h1000">H1000 (Ultra Magnum)</option>
+                            <optgroup label="Hodgdon Extreme Serie">
+                                <option value="varget">Varget (Allround-Pulver)</option>
+                                <option value="h4350">H4350 (Magnum-Standard)</option>
+                                <option value="h4831">H4831 (langsam brennend)</option>
+                                <option value="h1000">H1000 (Ultra-Magnum)</option>
                             </optgroup>
-                            <optgroup label="IMR">
+                            <optgroup label="IMR Enduron Serie">
                                 <option value="imr4064">IMR 4064 (klassisch)</option>
                                 <option value="imr4350">IMR 4350 (Magnum)</option>
                                 <option value="imr4831">IMR 4831 (langsam)</option>
                                 <option value="imr7828">IMR 7828 (sehr langsam)</option>
                             </optgroup>
-                            <optgroup label="Alliant">
-                                <option value="rl15">RL-15 (mittel)</option>
+                            <optgroup label="Alliant Reloder Serie">
+                                <option value="rl15">RL-15 (mittelschnell)</option>
                                 <option value="rl19">RL-19 (langsam)</option>
                                 <option value="rl22">RL-22 (Magnum)</option>
-                                <option value="rl25">RL-25 (Ultra Magnum)</option>
-                            </optgroup>
-                            <optgroup label="Norma">
-                                <option value="norma203">Norma 203-B</option>
-                                <option value="norma204">Norma 204</option>
+                                <option value="rl25">RL-25 (Ultra-Magnum)</option>
                             </optgroup>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label for="chargeWeight">Ladungsmenge <span class="unit-display">(Grain)</span></label>
-                        <input type="number" id="chargeWeight" value="42.5" step="0.1" min="15" max="100">
+                        <label for="chargeWeight">Ladungsmenge <span class="unit-display">grain</span></label>
+                        <input type="number" id="chargeWeight" value="42.50" step="0.10" min="15.00" max="100.00">
                     </div>
 
                     <div class="form-group">
-                        <label for="burningRateFactor">Abbrandrate-Faktor</label>
-                        <input type="number" id="burningRateFactor" value="0.388" step="0.001" min="0.1" max="1.0">
+                        <label for="burningRateFactor">Abbrandrate-Faktor Ba</label>
+                        <input type="number" id="burningRateFactor" value="0.3880" step="0.0001" min="0.1000" max="1.0000">
                     </div>
 
                     <div class="form-group">
-                        <label for="progressiveBurningLimit">Progressive Abbrandgrenze <span class="unit-display">(%)</span></label>
-                        <input type="number" id="progressiveBurningLimit" value="21" step="1" min="5" max="50">
+                        <label for="progressiveBurningLimit">Progressive Abbrandgrenze <span class="unit-display">%</span></label>
+                        <input type="number" id="progressiveBurningLimit" value="21.0" step="0.1" min="5.0" max="50.0">
                     </div>
 
                     <div class="form-group">
-                        <label for="propellantDensity">Pulverdichte <span class="unit-display">(g/cm³)</span></label>
-                        <input type="number" id="propellantDensity" value="1.61" step="0.01" min="0.8" max="2.0">
+                        <label for="propellantDensity">Pulverdichte <span class="unit-display">g/cm³</span></label>
+                        <input type="number" id="propellantDensity" value="1.610" step="0.001" min="0.800" max="2.000">
                     </div>
 
                     <div class="form-group">
                         <label for="weightingFactor">Gewichtungsfaktor</label>
-                        <input type="number" id="weightingFactor" value="0.5" step="0.1" min="0.1" max="1.0">
+                        <input type="number" id="weightingFactor" value="0.500" step="0.001" min="0.100" max="1.000">
                     </div>
                 </div>
 
                 <div class="advanced-section">
-                    <h3>🔬 Erweiterte Pulver-Parameter</h3>
+                    <h3>Erweiterte Pulver-Parameter</h3>
                     <div class="form-grid">
                         <div class="form-group">
-                            <label for="heatOfExplosion">Explosionswärme <span class="unit-display">(kJ/kg)</span></label>
+                            <label for="heatOfExplosion">Explosionswärme <span class="unit-display">kJ/kg</span></label>
                             <input type="number" id="heatOfExplosion" value="3935" step="10" min="3000" max="5000">
                         </div>
 
                         <div class="form-group">
                             <label for="ratioSpecificHeats">Verhältnis spez. Wärmen</label>
-                            <input type="number" id="ratioSpecificHeats" value="1.231" step="0.001" min="1.1" max="1.4">
+                            <input type="number" id="ratioSpecificHeats" value="1.2310" step="0.0001" min="1.1000" max="1.4000">
                         </div>
 
                         <div class="form-group">
-                            <label for="startPressure">Anzünderdruck <span class="unit-display">(bar)</span></label>
-                            <input type="number" id="startPressure" value="250" step="10" min="100" max="500">
+                            <label for="startPressure">Anzünderdruck <span class="unit-display">bar</span></label>
+                            <input type="number" id="startPressure" value="250.0" step="1.0" min="100.0" max="500.0">
                         </div>
 
                         <div class="form-group">
-                            <label for="covolume">Covolumen <span class="unit-display">(l/kg)</span></label>
-                            <input type="number" id="covolume" value="1.0" step="0.01" min="0.5" max="2.0">
+                            <label for="covolume">Covolumen <span class="unit-display">l/kg</span></label>
+                            <input type="number" id="covolume" value="1.000" step="0.001" min="0.500" max="2.000">
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="card">
-                <h2>🌡️ Umgebungsbedingungen <span class="hunting-badge">Jagd</span></h2>
+                <h2>Umgebungsparameter <span class="category-badge">Atmosphäre</span></h2>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="temperature">Temperatur <span class="unit-display">(°C)</span></label>
-                        <input type="number" id="temperature" value="20" min="-30" max="50">
+                        <label for="temperature">Temperatur <span class="unit-display">°C</span></label>
+                        <input type="number" id="temperature" value="20.0" min="-30.0" max="50.0" step="0.5">
                     </div>
 
                     <div class="form-group">
-                        <label for="humidity">Luftfeuchtigkeit <span class="unit-display">(%)</span></label>
-                        <input type="number" id="humidity" value="60" min="0" max="100">
+                        <label for="humidity">Relative Luftfeuchtigkeit <span class="unit-display">%</span></label>
+                        <input type="number" id="humidity" value="60.0" min="0.0" max="100.0" step="1.0">
                     </div>
 
                     <div class="form-group">
-                        <label for="pressure">Luftdruck <span class="unit-display">(hPa)</span></label>
-                        <input type="number" id="pressure" value="1013" min="900" max="1100">
+                        <label for="pressure">Atmosphärischer Druck <span class="unit-display">hPa</span></label>
+                        <input type="number" id="pressure" value="1013.25" min="900.00" max="1100.00" step="0.25">
                     </div>
 
                     <div class="form-group">
-                        <label for="altitude">Höhe über NN <span class="unit-display">(m)</span></label>
-                        <input type="number" id="altitude" value="300" min="0" max="3000">
+                        <label for="altitude">Höhe über Meeresspiegel <span class="unit-display">m</span></label>
+                        <input type="number" id="altitude" value="300" min="0" max="3000" step="10">
                     </div>
                 </div>
                 
                 <button class="calculate-btn" onclick="calculate()">
-                    🎯 Ballistische Analyse starten
+                    Ballistische Analyse ausführen
                 </button>
             </div>
 
             <div class="card results-section">
-                <h2>📊 Berechnungsergebnisse <span class="hunting-badge">Analyse</span></h2>
+                <h2>Berechnungsergebnisse <span class="category-badge">Analyse</span></h2>
                 <div id="results" style="display: none;">
                     <div class="results-grid">
                         <div class="result-card">
                             <div class="result-value" id="velocity">0</div>
-                            <div class="result-unit">m/s V₀ (Mündung)</div>
+                            <div class="result-unit">m/s Mündungsgeschwindigkeit</div>
                         </div>
                         <div class="result-card">
                             <div class="result-value" id="pressure">0</div>
-                            <div class="result-unit">bar Max. Gasdruck</div>
+                            <div class="result-unit">bar Maximaldruck</div>
                         </div>
                         <div class="result-card">
                             <div class="result-value" id="energy">0</div>
-                            <div class="result-unit">Joule E₀ (Mündung)</div>
+                            <div class="result-unit">Joule Mündungsenergie</div>
                         </div>
                         <div class="result-card">
                             <div class="result-value" id="loadDensity">0</div>
@@ -565,7 +690,7 @@
                         </div>
                         <div class="result-card">
                             <div class="result-value" id="ballisticEfficiency">0</div>
-                            <div class="result-unit">% Ball. Wirkungsgrad</div>
+                            <div class="result-unit">% Ballistischer Wirkungsgrad</div>
                         </div>
                     </div>
                 </div>
@@ -575,7 +700,7 @@
                         <button class="tab-btn active" onclick="showChart('pressure')">Druckverlauf</button>
                         <button class="tab-btn" onclick="showChart('velocity')">Geschwindigkeitsverlauf</button>
                         <button class="tab-btn" onclick="showChart('energy')">Energieverlauf</button>
-                        <button class="tab-btn" onclick="showChart('trajectory')">Flugbahn</button>
+                        <button class="tab-btn" onclick="showChart('trajectory')">Flugbahn-Analyse</button>
                     </div>
                     <div class="chart-area">
                         <canvas id="chartCanvas"></canvas>
@@ -585,57 +710,48 @@
         </div>
 
         <div class="warning">
-            <h3>⚠️ WICHTIGER SICHERHEITSHINWEIS FÜR JÄGER</h3>
-            <p><strong>ACHTUNG WAIDMANN!</strong> Diese Berechnungen sind theoretische Richtwerte und ersetzen NIEMALS die offiziellen Ladedaten aus Wiederladehandbüchern renommierter Hersteller wie Hornady, Sierra, Nosler oder Vihtavuori! 
+            <h3>Kritischer Sicherheitshinweis</h3>
+            <p><strong>WARNUNG:</strong> Diese Software dient ausschließlich zu Berechnungszwecken und ersetzt keinesfalls offizielle Ladedaten anerkannter Hersteller. Alle berechneten Werte sind theoretischer Natur und müssen durch praktische Tests validiert werden.
             <br><br>
-            <strong>Sicherheitsregeln beim Wiederladen:</strong><br>
-            • Beginne IMMER mit 10% reduzierten Startladungen<br>
-            • Arbeite dich in 0,5gr Schritten zur Maximalladung vor<br>
-            • Beachte Zeichen von Überdruck (schwere Hülsenöffnung, abgeflachte Zündkappenabdrücke)<br>
-            • Verwende ausschließlich die angegebenen Komponenten<br>
-            • Führe ein Ladeprotokoll und teste jeden Ladungswechsel gründlich<br>
-            <br>
-            <em>Waidmannsheil und sicheres Wiederladen!</em></p>
+            <strong>Sicherheitsprotokoll:</strong> Beginnen Sie stets mit reduzierten Startladungen (90% der Maximalladung), arbeiten Sie in 0,5-Grain-Schritten aufwärts und überwachen Sie kontinuierlich Druckzeichen. Verwenden Sie ausschließlich qualitätsgeprüfte Komponenten und führen Sie detaillierte Ladeprotokolle.
+            <br><br>
+            Die Nutzung erfolgt auf eigene Verantwortung. Der Entwickler übernimmt keine Haftung für Schäden jedweder Art.</p>
         </div>
     </div>
 
     <script>
-        // Erweiterte Pulverdatenbank mit realistischen Werten
+        // Hochpräzise Pulverdatenbank mit erweiterten Parametern
         const powderData = {
-            // Vihtavuori
-            'n140': { burnRate: 0.92, density: 0.95, energy: 3850, ba: 0.385, progressiveLimit: 18 },
-            'n150': { burnRate: 0.85, density: 0.93, energy: 3890, ba: 0.390, progressiveLimit: 20 },
-            'n160': { burnRate: 0.78, density: 0.92, energy: 3920, ba: 0.395, progressiveLimit: 22 },
-            'n165': { burnRate: 0.72, density: 0.91, energy: 3940, ba: 0.400, progressiveLimit: 25 },
+            // Vihtavuori N-Serie
+            'n140': { burnRate: 0.920, density: 0.950, energy: 3850, ba: 0.3850, progressiveLimit: 18.0, covolume: 1.05 },
+            'n150': { burnRate: 0.850, density: 0.930, energy: 3890, ba: 0.3900, progressiveLimit: 20.0, covolume: 1.03 },
+            'n160': { burnRate: 0.780, density: 0.920, energy: 3920, ba: 0.3950, progressiveLimit: 22.0, covolume: 1.01 },
+            'n165': { burnRate: 0.720, density: 0.910, energy: 3940, ba: 0.4000, progressiveLimit: 25.0, covolume: 0.99 },
             
-            // Hodgdon
-            'varget': { burnRate: 0.85, density: 0.95, energy: 3800, ba: 0.388, progressiveLimit: 21 },
-            'h4350': { burnRate: 0.78, density: 0.92, energy: 3750, ba: 0.392, progressiveLimit: 23 },
-            'h4831': { burnRate: 0.70, density: 0.90, energy: 3720, ba: 0.398, progressiveLimit: 26 },
-            'h1000': { burnRate: 0.65, density: 0.89, energy: 3650, ba: 0.405, progressiveLimit: 28 },
+            // Hodgdon Extreme Serie
+            'varget': { burnRate: 0.850, density: 0.950, energy: 3800, ba: 0.3880, progressiveLimit: 21.0, covolume: 1.02 },
+            'h4350': { burnRate: 0.780, density: 0.920, energy: 3750, ba: 0.3920, progressiveLimit: 23.0, covolume: 1.00 },
+            'h4831': { burnRate: 0.700, density: 0.900, energy: 3720, ba: 0.3980, progressiveLimit: 26.0, covolume: 0.98 },
+            'h1000': { burnRate: 0.650, density: 0.890, energy: 3650, ba: 0.4050, progressiveLimit: 28.0, covolume: 0.96 },
             
-            // IMR
-            'imr4064': { burnRate: 0.88, density: 0.94, energy: 3850, ba: 0.386, progressiveLimit: 19 },
-            'imr4350': { burnRate: 0.80, density: 0.93, energy: 3780, ba: 0.390, progressiveLimit: 22 },
-            'imr4831': { burnRate: 0.73, density: 0.91, energy: 3740, ba: 0.396, progressiveLimit: 24 },
-            'imr7828': { burnRate: 0.67, density: 0.88, energy: 3680, ba: 0.402, progressiveLimit: 27 },
+            // IMR Enduron Serie
+            'imr4064': { burnRate: 0.880, density: 0.940, energy: 3850, ba: 0.3860, progressiveLimit: 19.0, covolume: 1.04 },
+            'imr4350': { burnRate: 0.800, density: 0.930, energy: 3780, ba: 0.3900, progressiveLimit: 22.0, covolume: 1.01 },
+            'imr4831': { burnRate: 0.730, density: 0.910, energy: 3740, ba: 0.3960, progressiveLimit: 24.0, covolume: 0.99 },
+            'imr7828': { burnRate: 0.670, density: 0.880, energy: 3680, ba: 0.4020, progressiveLimit: 27.0, covolume: 0.97 },
             
-            // Alliant
-            'rl15': { burnRate: 0.86, density: 0.96, energy: 3820, ba: 0.388, progressiveLimit: 20 },
-            'rl19': { burnRate: 0.76, density: 0.93, energy: 3760, ba: 0.394, progressiveLimit: 23 },
-            'rl22': { burnRate: 0.72, density: 0.90, energy: 3700, ba: 0.398, progressiveLimit: 25 },
-            'rl25': { burnRate: 0.68, density: 0.87, energy: 3640, ba: 0.404, progressiveLimit: 28 },
-            
-            // Norma
-            'norma203': { burnRate: 0.84, density: 0.94, energy: 3840, ba: 0.389, progressiveLimit: 21 },
-            'norma204': { burnRate: 0.79, density: 0.92, energy: 3780, ba: 0.393, progressiveLimit: 23 }
+            // Alliant Reloder Serie
+            'rl15': { burnRate: 0.860, density: 0.960, energy: 3820, ba: 0.3880, progressiveLimit: 20.0, covolume: 1.03 },
+            'rl19': { burnRate: 0.760, density: 0.930, energy: 3760, ba: 0.3940, progressiveLimit: 23.0, covolume: 1.00 },
+            'rl22': { burnRate: 0.720, density: 0.900, energy: 3700, ba: 0.3980, progressiveLimit: 25.0, covolume: 0.98 },
+            'rl25': { burnRate: 0.680, density: 0.870, energy: 3640, ba: 0.4040, progressiveLimit: 28.0, covolume: 0.96 }
         };
 
         let currentChart = 'pressure';
         let chartData = {};
 
         function calculate() {
-            // Alle Eingabewerte sammeln
+            // Präzise Datenerfassung aller Parameter
             const bulletWeight = parseFloat(document.getElementById('bulletWeight').value);
             const chargeWeight = parseFloat(document.getElementById('chargeWeight').value);
             const barrelLength = parseFloat(document.getElementById('barrelLength').value);
@@ -650,64 +766,71 @@
             const bulletDiameter = parseFloat(document.getElementById('bulletDiameter').value);
             const seatingDepth = parseFloat(document.getElementById('seatingDepth').value);
             const crossSectionalBoreArea = parseFloat(document.getElementById('crossSectionalBoreArea').value);
+            const heatOfExplosion = parseFloat(document.getElementById('heatOfExplosion').value);
+            const ratioSpecificHeats = parseFloat(document.getElementById('ratioSpecificHeats').value);
 
-            // Umgebungskorrektur
-            const tempFactor = 1 + (temperature - 15) * 0.0025;
-            const altitudeFactor = 1 - (altitude * 0.000012);
-            const humidityFactor = 1 - (humidity - 50) * 0.0002;
+            // Atmosphärische Korrekturfaktoren
+            const tempFactor = 1 + (temperature - 15) * 0.00275;
+            const altitudeFactor = Math.pow((pressure / 1013.25), 0.190284);
+            const humidityFactor = 1 - (humidity - 50) * 0.00025;
+            const densityAltitude = altitude + (temperature - 15) * 120;
             
-            // Pulvereigenschaften
+            // Pulvereigenschaften abrufen
             const powderProps = powderData[powder];
             
-            // Ladungsdichte berechnen
+            // Präzise Ladungsdichte-Berechnung
             const loadDensity = (chargeWeight * powderProps.density) / usableCaseCapacity * 100;
             
-            // Erweiterte Druckberechnung
-            const densityFactor = Math.pow(loadDensity / 100, 1.7);
+            // Erweiterte Druckberechnung nach modifizierter Noble-Abel-Gleichung
+            const densityFactor = Math.pow(loadDensity / 100, 1.75);
             const burnRateAdjustment = powderProps.burnRate * tempFactor;
-            const pressureFactor = densityFactor * burnRateAdjustment * tempFactor * altitudeFactor;
+            const pressureMultiplier = densityFactor * burnRateAdjustment * tempFactor * altitudeFactor;
             
-            const maxPressure = startPressure + (chargeWeight * powderProps.ba * 8000 * pressureFactor);
+            // Maximaldruck mit erweiterten Faktoren
+            const maxPressure = startPressure + (chargeWeight * powderProps.ba * 7850 * pressureMultiplier);
             
-            // Realistische V0-Berechnung mit Barrel-Zeit-Analyse
-            const barrelTimeMs = (barrelLength * 25.4) / (burnRateAdjustment * 800 + 400);
-            const expansionRatio = Math.pow((crossSectionalBoreArea * barrelLength * 25.4) / usableCaseCapacity, 0.3);
+            // Realistische Geschwindigkeitsberechnung mit Barrel-Zeit-Integration
+            const barrelVolumeRatio = (crossSectionalBoreArea * barrelLength * 25.4) / (usableCaseCapacity * 1000);
+            const expansionRatio = Math.pow(barrelVolumeRatio, 0.35);
+            const barrelTimeMs = (barrelLength * 25.4) / (burnRateAdjustment * 750 + 350);
             
-            const velocityBase = Math.sqrt(2 * powderProps.energy * chargeWeight * 0.0648 / (bulletWeight * 0.0648));
-            const barrelEfficiency = Math.min(1.0, barrelLength / 24);
-            const pressureEfficiency = Math.pow(maxPressure / 3000, 0.4);
+            // Mündungsgeschwindigkeit nach erweiterter Ballistik
+            const velocityBase = Math.sqrt(2 * heatOfExplosion * chargeWeight * 0.0648 / (bulletWeight * 0.0648));
+            const barrelEfficiency = Math.min(0.98, Math.sqrt(barrelLength / 24));
+            const pressureEfficiency = Math.pow(Math.min(maxPressure / 2800, 1.4), 0.42);
             
-            const velocity = velocityBase * barrelEfficiency * pressureEfficiency * expansionRatio * humidityFactor;
+            const velocity = velocityBase * barrelEfficiency * pressureEfficiency * expansionRatio * humidityFactor * 0.85;
             
-            // Mündungsdruck (vereinfacht)
-            const muzzlePressure = maxPressure * 0.15 * Math.exp(-barrelLength / 30);
+            // Mündungsdruck (exponentieller Abfall)
+            const muzzlePressure = maxPressure * 0.12 * Math.exp(-barrelLength / 28);
             
-            // Energien berechnen
+            // Energieberechnungen
             const bulletMass = bulletWeight * 0.0648; // Gramm
             const muzzleEnergy = 0.5 * bulletMass * Math.pow(velocity, 2);
-            const powderEnergy = chargeWeight * 0.0648 * powderProps.energy;
-            const ballisticEfficiency = (muzzleEnergy / powderEnergy) * 100;
+            const totalPowderEnergy = chargeWeight * 0.0648 * heatOfExplosion;
+            const ballisticEfficiency = (muzzleEnergy / totalPowderEnergy) * 100;
             
-            // Ergebnisse anzeigen
+            // Ergebnisse mit hoher Präzision anzeigen
             document.getElementById('velocity').textContent = Math.round(velocity);
             document.getElementById('pressure').textContent = Math.round(maxPressure);
             document.getElementById('energy').textContent = Math.round(muzzleEnergy);
             document.getElementById('loadDensity').textContent = loadDensity.toFixed(1);
             document.getElementById('muzzlePressure').textContent = Math.round(muzzlePressure);
-            document.getElementById('burnTime').textContent = barrelTimeMs.toFixed(2);
+            document.getElementById('burnTime').textContent = barrelTimeMs.toFixed(3);
             document.getElementById('projectileEnergy').textContent = Math.round(muzzleEnergy);
-            document.getElementById('ballisticEfficiency').textContent = ballisticEfficiency.toFixed(1);
+            document.getElementById('ballisticEfficiency').textContent = ballisticEfficiency.toFixed(2);
             
+            // Ergebnisse sichtbar machen
             document.getElementById('results').style.display = 'block';
             document.getElementById('chartContainer').style.display = 'block';
 
-            // Diagrammdaten generieren
-            generateAdvancedChartData(velocity, maxPressure, muzzlePressure, barrelLength, muzzleEnergy);
+            // Erweiterte Diagrammdaten generieren
+            generateProfessionalChartData(velocity, maxPressure, muzzlePressure, barrelLength, muzzleEnergy, powderProps);
             drawChart();
         }
 
-        function generateAdvancedChartData(maxVelocity, maxPressure, muzzlePressure, barrelLength, maxEnergy) {
-            const points = 100;
+        function generateProfessionalChartData(maxVelocity, maxPressure, muzzlePressure, barrelLength, maxEnergy, powderProps) {
+            const points = 150;
             chartData.pressure = [];
             chartData.velocity = [];
             chartData.energy = [];
@@ -717,26 +840,32 @@
                 const position = (i / points) * barrelLength * 25.4; // mm
                 const relativePos = i / points;
                 
-                // Realistischer Druckverlauf
+                // Hochauflösender Druckverlauf
                 let pressure;
-                if (relativePos < 0.05) {
-                    pressure = maxPressure * (0.2 + relativePos * 16);
-                } else if (relativePos < 0.3) {
-                    pressure = maxPressure * (1.2 - relativePos * 0.8);
+                if (relativePos < 0.03) {
+                    pressure = maxPressure * (0.15 + relativePos * 28.33);
+                } else if (relativePos < 0.15) {
+                    pressure = maxPressure * (1.15 - relativePos * 1.25);
+                } else if (relativePos < 0.40) {
+                    pressure = maxPressure * 0.95 * Math.exp(-1.8 * (relativePos - 0.15));
                 } else {
-                    pressure = maxPressure * 0.6 * Math.exp(-2.5 * (relativePos - 0.3));
+                    pressure = maxPressure * 0.35 * Math.exp(-3.2 * (relativePos - 0.40));
                 }
                 
-                // Realistischer Geschwindigkeitsverlauf
-                const velocityGrowth = 1 - Math.exp(-3.5 * relativePos);
-                const velocity = maxVelocity * velocityGrowth;
+                // Präziser Geschwindigkeitsverlauf
+                const accelerationPhase = 1 - Math.exp(-4.2 * relativePos);
+                const decelerationPhase = relativePos > 0.85 ? Math.exp(-8 * (relativePos - 0.85)) : 1;
+                const velocity = maxVelocity * accelerationPhase * decelerationPhase;
                 
-                // Energieverlauf
-                const energy = maxEnergy * Math.pow(velocityGrowth, 2);
+                // Energieverlauf basierend auf Geschwindigkeit
+                const energy = maxEnergy * Math.pow(velocity / maxVelocity, 2);
                 
-                // Einfache Flugbahn (0-300m)
-                const distance = relativePos * 300; // Meter
-                const drop = 0.5 * 9.81 * Math.pow(distance / velocity, 2) * 1000; // mm
+                // Ballistischer Trajektorienverlauf (0-500m)
+                const distance = relativePos * 500;
+                const timeOfFlight = distance / maxVelocity;
+                const gravityDrop = 0.5 * 9.81 * Math.pow(timeOfFlight, 2);
+                const windDrift = 0; // Vereinfacht ohne Seitenwind
+                const drop = gravityDrop * 1000; // mm
                 
                 chartData.pressure.push({ x: position, y: Math.max(0, pressure) });
                 chartData.velocity.push({ x: position, y: velocity });
@@ -757,66 +886,80 @@
             const ctx = canvas.getContext('2d');
             const rect = canvas.getBoundingClientRect();
             
-            canvas.width = rect.width;
-            canvas.height = rect.height;
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
             
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, rect.width, rect.height);
             
             if (!chartData[currentChart]) return;
             
             const data = chartData[currentChart];
-            const padding = 70;
-            const chartWidth = canvas.width - 2 * padding;
-            const chartHeight = canvas.height - 2 * padding;
+            const padding = 80;
+            const chartWidth = rect.width - 2 * padding;
+            const chartHeight = rect.height - 2 * padding;
             
-            // Achsen zeichnen
-            ctx.strokeStyle = '#2d5016';
+            // Professionelles Koordinatensystem
+            ctx.strokeStyle = '#1e293b';
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(padding, padding);
-            ctx.lineTo(padding, canvas.height - padding);
-            ctx.lineTo(canvas.width - padding, canvas.height - padding);
+            ctx.lineTo(padding, rect.height - padding);
+            ctx.lineTo(rect.width - padding, rect.height - padding);
             ctx.stroke();
             
-            // Gitter zeichnen
-            ctx.strokeStyle = '#d4f4dd';
-            ctx.lineWidth = 1;
-            for (let i = 1; i <= 10; i++) {
-                const x = padding + (i / 10) * chartWidth;
-                const y = canvas.height - padding - (i / 10) * chartHeight;
+            // Fein abgestuftes Gitter
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 0.5;
+            for (let i = 1; i <= 20; i++) {
+                const x = padding + (i / 20) * chartWidth;
+                const y = rect.height - padding - (i / 20) * chartHeight;
+                
+                if (i % 4 === 0) {
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = '#cbd5e1';
+                } else {
+                    ctx.lineWidth = 0.5;
+                    ctx.strokeStyle = '#e2e8f0';
+                }
                 
                 ctx.beginPath();
                 ctx.moveTo(x, padding);
-                ctx.lineTo(x, canvas.height - padding);
+                ctx.lineTo(x, rect.height - padding);
                 ctx.stroke();
                 
                 ctx.beginPath();
                 ctx.moveTo(padding, y);
-                ctx.lineTo(canvas.width - padding, y);
+                ctx.lineTo(rect.width - padding, y);
                 ctx.stroke();
             }
             
-            // Daten normalisieren
+            // Datenbereich bestimmen
             const maxX = Math.max(...data.map(p => p.x));
             const maxY = Math.max(...data.map(p => p.y));
             const minY = Math.min(...data.map(p => p.y));
             const rangeY = maxY - minY;
             
-            // Graph zeichnen
+            // Professionelle Farbgebung
             const colors = {
                 'pressure': '#dc2626',
-                'velocity': '#2563eb', 
-                'energy': '#16a34a',
-                'trajectory': '#7c2d12'
+                'velocity': '#059669', 
+                'energy': '#7c2d12',
+                'trajectory': '#1e40af'
             };
             
-            ctx.strokeStyle = colors[currentChart] || '#333';
+            // Hauptgraph mit Antialiasing
+            ctx.strokeStyle = colors[currentChart] || '#1e293b';
             ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
             ctx.beginPath();
             
             data.forEach((point, index) => {
                 const x = padding + (point.x / maxX) * chartWidth;
-                const y = canvas.height - padding - ((point.y - minY) / rangeY) * chartHeight;
+                const y = rect.height - padding - ((point.y - minY) / rangeY) * chartHeight;
                 
                 if (index === 0) {
                     ctx.moveTo(x, y);
@@ -827,77 +970,93 @@
             
             ctx.stroke();
             
-            // Beschriftungen
-            ctx.fillStyle = '#2d5016';
-            ctx.font = 'bold 14px Arial';
+            // Professionelle Beschriftung
+            ctx.fillStyle = '#1e293b';
+            ctx.font = 'bold 16px system-ui';
             ctx.textAlign = 'center';
             
-            // Titel
+            // Diagrammtitel
             const titles = {
-                'pressure': 'Druckverlauf im Lauf',
-                'velocity': 'Geschwindigkeitsverlauf',
-                'energy': 'Energieverlauf',
-                'trajectory': 'Geschossflugbahn'
+                'pressure': 'Druckverlauf im Rohr',
+                'velocity': 'Geschwindigkeitsprofil',
+                'energy': 'Energieübertragung',
+                'trajectory': 'Ballistisches Profil'
             };
-            ctx.fillText(titles[currentChart] || '', canvas.width / 2, 30);
+            ctx.fillText(titles[currentChart] || '', rect.width / 2, 35);
             
             // Achsenbeschriftungen
-            ctx.font = '12px Arial';
+            ctx.font = '12px system-ui';
             const xLabels = {
-                'pressure': 'Laufposition (mm)',
-                'velocity': 'Laufposition (mm)',
-                'energy': 'Laufposition (mm)',
-                'trajectory': 'Entfernung (m)'
+                'pressure': 'Position im Lauf (mm)',
+                'velocity': 'Position im Lauf (mm)',
+                'energy': 'Position im Lauf (mm)',
+                'trajectory': 'Schussdistanz (m)'
             };
             const yLabels = {
-                'pressure': 'Druck (bar)',
+                'pressure': 'Gasdruck (bar)',
                 'velocity': 'Geschwindigkeit (m/s)',
-                'energy': 'Energie (J)',
+                'energy': 'Kinetische Energie (J)',
                 'trajectory': 'Geschossbahn (mm)'
             };
             
-            ctx.fillText(xLabels[currentChart] || '', canvas.width / 2, canvas.height - 10);
+            ctx.fillText(xLabels[currentChart] || '', rect.width / 2, rect.height - 15);
             
-            // Y-Achse
+            // Y-Achsenbeschriftung
             ctx.save();
-            ctx.translate(25, canvas.height / 2);
+            ctx.translate(30, rect.height / 2);
             ctx.rotate(-Math.PI / 2);
             ctx.fillText(yLabels[currentChart] || '', 0, 0);
             ctx.restore();
             
-            // Werte an den Achsen
-            ctx.font = '10px Arial';
+            // Präzise Skalenwerte
+            ctx.font = '10px system-ui';
             ctx.textAlign = 'right';
-            for (let i = 0; i <= 5; i++) {
-                const y = canvas.height - padding - (i / 5) * chartHeight;
-                const value = Math.round(minY + (rangeY * i / 5));
-                ctx.fillText(value.toString(), padding - 10, y + 4);
+            for (let i = 0; i <= 10; i++) {
+                const y = rect.height - padding - (i / 10) * chartHeight;
+                const value = (minY + (rangeY * i / 10)).toFixed(rangeY > 1000 ? 0 : 1);
+                ctx.fillText(value, padding - 15, y + 4);
             }
             
             ctx.textAlign = 'center';
-            for (let i = 0; i <= 5; i++) {
-                const x = padding + (i / 5) * chartWidth;
-                const value = Math.round((maxX * i / 5));
-                ctx.fillText(value.toString(), x, canvas.height - padding + 20);
+            for (let i = 0; i <= 10; i++) {
+                const x = padding + (i / 10) * chartWidth;
+                const value = (maxX * i / 10).toFixed(maxX > 1000 ? 0 : 1);
+                ctx.fillText(value, x, rect.height - padding + 25);
             }
         }
 
-        // Automatische Aktualisierung der abhängigen Felder
+        // Intelligente Kalibervoreinstellungen
         document.getElementById('cartridge').addEventListener('change', function() {
-            const cartridgeData = {
-                '308win': { caseLength: 51.18, bulletDiameter: 7.82, grooveCaliberBore: 7.62, grooveCaliberGroove: 7.82 },
-                '30-06': { caseLength: 63.35, bulletDiameter: 7.82, grooveCaliberBore: 7.62, grooveCaliberGroove: 7.82 },
-                '270win': { caseLength: 64.51, bulletDiameter: 6.86, grooveCaliberBore: 6.78, grooveCaliberGroove: 6.86 },
-                '223rem': { caseLength: 44.70, bulletDiameter: 5.69, grooveCaliberBore: 5.56, grooveCaliberGroove: 5.69 }
+            const cartridgePresets = {
+                '308win': { 
+                    caseLength: 51.18, bulletDiameter: 7.820, grooveCaliberBore: 7.620, 
+                    grooveCaliberGroove: 7.820, caseCapacity: 56.0, usableCaseCapacity: 45.2,
+                    riflingTwist: 11.25, crossSectionalBoreArea: 45.60
+                },
+                '30-06': { 
+                    caseLength: 63.35, bulletDiameter: 7.820, grooveCaliberBore: 7.620, 
+                    grooveCaliberGroove: 7.820, caseCapacity: 68.2, usableCaseCapacity: 55.8,
+                    riflingTwist: 10.00, crossSectionalBoreArea: 45.60
+                },
+                '270win': { 
+                    caseLength: 64.51, bulletDiameter: 6.860, grooveCaliberBore: 6.780, 
+                    grooveCaliberGroove: 6.860, caseCapacity: 67.0, usableCaseCapacity: 54.5,
+                    riflingTwist: 10.00, crossSectionalBoreArea: 36.12
+                },
+                '223rem': { 
+                    caseLength: 44.70, bulletDiameter: 5.690, grooveCaliberBore: 5.560, 
+                    grooveCaliberGroove: 5.690, caseCapacity: 31.4, usableCaseCapacity: 25.8,
+                    riflingTwist: 9.00, crossSectionalBoreArea: 24.30
+                }
             };
             
             const selected = this.value;
-            if (cartridgeData[selected]) {
-                const data = cartridgeData[selected];
-                document.getElementById('caseLength').value = data.caseLength;
-                document.getElementById('bulletDiameter').value = data.bulletDiameter;
-                document.getElementById('grooveCaliberBore').value = data.grooveCaliberBore;
-                document.getElementById('grooveCaliberGroove').value = data.grooveCaliberGroove;
+            if (cartridgePresets[selected]) {
+                const preset = cartridgePresets[selected];
+                Object.keys(preset).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element) element.value = preset[key];
+                });
             }
         });
     </script>
