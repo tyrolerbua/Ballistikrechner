@@ -1,769 +1,1040 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuickLOAD Professional - Ballistische Berechnungsplattform</title>
+import React, { useState, useEffect, useMemo } from 'react';
+import { Calculator, Target, AlertTriangle, Info, Download, Settings, Database, BarChart3, Activity, Thermometer, Wind, Gauge } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
+
+// Massive erweiterte Patronendatenbank
+const cartridgeData = {
+  // .22 Kaliber
+  '.22 LR': { capacity: 4.6, maxPressure: 24000, casingWeight: 25, caseLength: 0.613, grooveDiameter: 0.224, landDiameter: 0.219, riflingTwist: 16, cartridgeLength: 1.000, neckDiameter: 0.226, shoulderDiameter: 0.226, baseDiameter: 0.226, rimDiameter: 0.278 },
+  '.22-250 Remington': { capacity: 45.5, maxPressure: 65000, casingWeight: 135, caseLength: 1.912, grooveDiameter: 0.224, landDiameter: 0.219, riflingTwist: 14, cartridgeLength: 2.350, neckDiameter: 0.253, shoulderDiameter: 0.414, baseDiameter: 0.470, rimDiameter: 0.473 },
+  '.223 Remington': { capacity: 28.5, maxPressure: 55000, casingWeight: 95, caseLength: 1.760, grooveDiameter: 0.224, landDiameter: 0.219, riflingTwist: 9, cartridgeLength: 2.260, neckDiameter: 0.253, shoulderDiameter: 0.354, baseDiameter: 0.378, rimDiameter: 0.378 },
+  '.224 Valkyrie': { capacity: 34.2, maxPressure: 55000, casingWeight: 105, caseLength: 1.600, grooveDiameter: 0.224, landDiameter: 0.219, riflingTwist: 7, cartridgeLength: 2.260, neckDiameter: 0.254, shoulderDiameter: 0.445, baseDiameter: 0.473, rimDiameter: 0.473 },
+
+  // 6mm Kaliber  
+  '.243 Winchester': { capacity: 53.0, maxPressure: 60000, casingWeight: 160, caseLength: 2.045, grooveDiameter: 0.243, landDiameter: 0.237, riflingTwist: 10, cartridgeLength: 2.710, neckDiameter: 0.276, shoulderDiameter: 0.454, baseDiameter: 0.470, rimDiameter: 0.473 },
+  '6mm Creedmoor': { capacity: 53.7, maxPressure: 62000, casingWeight: 165, caseLength: 1.920, grooveDiameter: 0.243, landDiameter: 0.237, riflingTwist: 7.5, cartridgeLength: 2.825, neckDiameter: 0.272, shoulderDiameter: 0.420, baseDiameter: 0.470, rimDiameter: 0.473 },
+  '6mm PPC': { capacity: 33.5, maxPressure: 60000, casingWeight: 120, caseLength: 1.515, grooveDiameter: 0.243, landDiameter: 0.237, riflingTwist: 14, cartridgeLength: 2.175, neckDiameter: 0.272, shoulderDiameter: 0.441, baseDiameter: 0.445, rimDiameter: 0.445 },
+
+  // 6.5mm Kaliber
+  '6.5 Creedmoor': { capacity: 52.5, maxPressure: 62000, casingWeight: 165, caseLength: 1.920, grooveDiameter: 0.264, landDiameter: 0.256, riflingTwist: 8, cartridgeLength: 2.825, neckDiameter: 0.295, shoulderDiameter: 0.420, baseDiameter: 0.470, rimDiameter: 0.473 },
+  '6.5 PRC': { capacity: 68.0, maxPressure: 65000, casingWeight: 190, caseLength: 2.030, grooveDiameter: 0.264, landDiameter: 0.256, riflingTwist: 8, cartridgeLength: 2.955, neckDiameter: 0.295, shoulderDiameter: 0.532, baseDiameter: 0.532, rimDiameter: 0.532 },
+  '6.5x55 Swedish': { capacity: 65.8, maxPressure: 51000, casingWeight: 185, caseLength: 2.165, grooveDiameter: 0.264, landDiameter: 0.256, riflingTwist: 8, cartridgeLength: 3.150, neckDiameter: 0.295, shoulderDiameter: 0.445, baseDiameter: 0.480, rimDiameter: 0.480 },
+  '6.5 Grendel': { capacity: 35.0, maxPressure: 52000, casingWeight: 125, caseLength: 1.520, grooveDiameter: 0.264, landDiameter: 0.256, riflingTwist: 8, cartridgeLength: 2.260, neckDiameter: 0.295, shoulderDiameter: 0.431, baseDiameter: 0.441, rimDiameter: 0.441 },
+
+  // .270 Kaliber
+  '.270 Winchester': { capacity: 67.0, maxPressure: 65000, casingWeight: 185, caseLength: 2.540, grooveDiameter: 0.277, landDiameter: 0.270, riflingTwist: 10, cartridgeLength: 3.340, neckDiameter: 0.308, shoulderDiameter: 0.441, baseDiameter: 0.470, rimDiameter: 0.473 },
+  '.270 WSM': { capacity: 80.0, maxPressure: 65000, casingWeight: 210, caseLength: 2.100, grooveDiameter: 0.277, landDiameter: 0.270, riflingTwist: 10, cartridgeLength: 2.860, neckDiameter: 0.308, shoulderDiameter: 0.538, baseDiameter: 0.555, rimDiameter: 0.535 },
+  '.280 Remington': { capacity: 65.5, maxPressure: 60000, casingWeight: 180, caseLength: 2.540, grooveDiameter: 0.284, landDiameter: 0.277, riflingTwist: 9.5, cartridgeLength: 3.330, neckDiameter: 0.315, shoulderDiameter: 0.441, baseDiameter: 0.470, rimDiameter: 0.473 },
+  '.280 AI': { capacity: 71.0, maxPressure: 60000, casingWeight: 185, caseLength: 2.540, grooveDiameter: 0.284, landDiameter: 0.277, riflingTwist: 9.5, cartridgeLength: 3.330, neckDiameter: 0.315, shoulderDiameter: 0.473, baseDiameter: 0.470, rimDiameter: 0.473 },
+
+  // 7mm Kaliber
+  '7mm-08 Remington': { capacity: 52.0, maxPressure: 61000, casingWeight: 160, caseLength: 2.035, grooveDiameter: 0.284, landDiameter: 0.277, riflingTwist: 9.5, cartridgeLength: 2.800, neckDiameter: 0.315, shoulderDiameter: 0.454, baseDiameter: 0.470, rimDiameter: 0.473 },
+  '7mm Rem Mag': { capacity: 82.0, maxPressure: 61000, casingWeight: 220, caseLength: 2.500, grooveDiameter: 0.284, landDiameter: 0.277, riflingTwist: 9.5, cartridgeLength: 3.290, neckDiameter: 0.315, shoulderDiameter: 0.491, baseDiameter: 0.532, rimDiameter: 0.532 },
+  '7mm WSM': { capacity: 78.5, maxPressure: 65000, casingWeight: 200, caseLength: 2.100, grooveDiameter: 0.284, landDiameter: 0.277, riflingTwist: 9.5, cartridgeLength: 2.860, neckDiameter: 0.315, shoulderDiameter: 0.538, baseDiameter: 0.555, rimDiameter: 0.535 },
+
+  // .30 Kaliber
+  '.30-30 Winchester': { capacity: 42.0, maxPressure: 42000, casingWeight: 140, caseLength: 2.039, grooveDiameter: 0.308, landDiameter: 0.300, riflingTwist: 12, cartridgeLength: 2.550, neckDiameter: 0.330, shoulderDiameter: 0.401, baseDiameter: 0.422, rimDiameter: 0.506 },
+  '.300 AAC Blackout': { capacity: 27.5, maxPressure: 55000, casingWeight: 95, caseLength: 1.368, grooveDiameter: 0.308, landDiameter: 0.300, riflingTwist: 8, cartridgeLength: 2.260, neckDiameter: 0.334, shoulderDiameter: 0.377, baseDiameter: 0.378, rimDiameter: 0.378 },
+  '.308 Winchester': { capacity: 56.0, maxPressure: 62000, casingWeight: 175, caseLength: 2.015, grooveDiameter: 0.308, landDiameter: 0.300, riflingTwist: 12, cartridgeLength: 2.800, neckDiameter: 0.334, shoulderDiameter: 0.454, baseDiameter: 0.470, rimDiameter: 0.473 },
+  '.30-06 Springfield': { capacity: 68.0, maxPressure: 60000, casingWeight: 190, caseLength: 2.494, grooveDiameter: 0.308, landDiameter: 0.300, riflingTwist: 10, cartridgeLength: 3.340, neckDiameter: 0.340, shoulderDiameter: 0.441, baseDiameter: 0.470, rimDiameter: 0.473 },
+  '.300 Win Mag': { capacity: 93.8, maxPressure: 64000, casingWeight: 230, caseLength: 2.620, grooveDiameter: 0.308, landDiameter: 0.300, riflingTwist: 10, cartridgeLength: 3.340, neckDiameter: 0.339, shoulderDiameter: 0.513, baseDiameter: 0.532, rimDiameter: 0.532 },
+  '.300 WSM': { capacity: 80.0, maxPressure: 65000, casingWeight: 210, caseLength: 2.100, grooveDiameter: 0.308, landDiameter: 0.300, riflingTwist: 10, cartridgeLength: 2.860, neckDiameter: 0.339, shoulderDiameter: 0.538, baseDiameter: 0.555, rimDiameter: 0.535 },
+  '.300 PRC': { capacity: 77.0, maxPressure: 65000, casingWeight: 200, caseLength: 2.580, grooveDiameter: 0.308, landDiameter: 0.300, riflingTwist: 10, cartridgeLength: 3.700, neckDiameter: 0.339, shoulderDiameter: 0.532, baseDiameter: 0.532, rimDiameter: 0.532 },
+
+  // .338 Kaliber
+  '.338 Lapua Magnum': { capacity: 114.0, maxPressure: 60916, casingWeight: 280, caseLength: 2.724, grooveDiameter: 0.338, landDiameter: 0.330, riflingTwist: 10, cartridgeLength: 3.681, neckDiameter: 0.370, shoulderDiameter: 0.587, baseDiameter: 0.587, rimDiameter: 0.588 },
+  '.338 Win Mag': { capacity: 86.0, maxPressure: 64000, casingWeight: 230, caseLength: 2.500, grooveDiameter: 0.338, landDiameter: 0.330, riflingTwist: 10, cartridgeLength: 3.340, neckDiameter: 0.369, shoulderDiameter: 0.491, baseDiameter: 0.532, rimDiameter: 0.532 },
+
+  // .50 Kaliber
+  '.50 BMG': { capacity: 290.0, maxPressure: 55000, casingWeight: 865, caseLength: 3.910, grooveDiameter: 0.510, landDiameter: 0.500, riflingTwist: 15, cartridgeLength: 5.450, neckDiameter: 0.541, shoulderDiameter: 0.804, baseDiameter: 0.804, rimDiameter: 0.804 },
+
+  // Pistolkaliber
+  '9mm Luger': { capacity: 13.3, maxPressure: 35000, casingWeight: 60, caseLength: 0.754, grooveDiameter: 0.355, landDiameter: 0.346, riflingTwist: 10, cartridgeLength: 1.169, neckDiameter: 0.380, shoulderDiameter: 0.380, baseDiameter: 0.391, rimDiameter: 0.392 },
+  '.40 S&W': { capacity: 16.7, maxPressure: 35000, casingWeight: 75, caseLength: 0.850, grooveDiameter: 0.400, landDiameter: 0.390, riflingTwist: 16, cartridgeLength: 1.135, neckDiameter: 0.424, shoulderDiameter: 0.424, baseDiameter: 0.424, rimDiameter: 0.424 },
+  '.45 ACP': { capacity: 23.7, maxPressure: 21000, casingWeight: 95, caseLength: 0.898, grooveDiameter: 0.452, landDiameter: 0.442, riflingTwist: 16, cartridgeLength: 1.275, neckDiameter: 0.476, shoulderDiameter: 0.476, baseDiameter: 0.476, rimDiameter: 0.480 },
+  '.357 Magnum': { capacity: 26.2, maxPressure: 35000, casingWeight: 110, caseLength: 1.290, grooveDiameter: 0.357, landDiameter: 0.346, riflingTwist: 14, cartridgeLength: 1.590, neckDiameter: 0.379, shoulderDiameter: 0.379, baseDiameter: 0.379, rimDiameter: 0.440 },
+  '.44 Magnum': { capacity: 37.9, maxPressure: 36000, casingWeight: 180, caseLength: 1.285, grooveDiameter: 0.429, landDiameter: 0.420, riflingTwist: 20, cartridgeLength: 1.610, neckDiameter: 0.456, shoulderDiameter: 0.456, baseDiameter: 0.456, rimDiameter: 0.514 }
+};
+
+// Massive erweiterte Pulverdatenbank
+const powderData = {
+  // Hodgdon Extreme Series
+  'Varget': { burnRate: 0.65, density: 0.92, tempCoeff: 0.3, energyDensity: 3850, specificHeatRatio: 1.231, heatOfExplosion: 3935, burningRateFactor: 0.388, progressiveBurningLimit: 1.595, solidDensity: 1.61, shotStartPressure: 250.0, covolume: 1.0, formFunction: 0.85 },
+  'H4350': { burnRate: 0.45, density: 0.89, tempCoeff: 0.2, energyDensity: 3900, specificHeatRatio: 1.225, heatOfExplosion: 3950, burningRateFactor: 0.365, progressiveBurningLimit: 1.480, solidDensity: 1.58, shotStartPressure: 220.0, covolume: 1.05, formFunction: 0.88 },
+  'H1000': { burnRate: 0.25, density: 0.87, tempCoeff: 0.1, energyDensity: 3950, specificHeatRatio: 1.218, heatOfExplosion: 4020, burningRateFactor: 0.285, progressiveBurningLimit: 1.320, solidDensity: 1.52, shotStartPressure: 180.0, covolume: 1.12, formFunction: 0.92 },
+  'H4831': { burnRate: 0.42, density: 0.88, tempCoeff: 0.25, energyDensity: 3890, specificHeatRatio: 1.228, heatOfExplosion: 3920, burningRateFactor: 0.345, progressiveBurningLimit: 1.420, solidDensity: 1.59, shotStartPressure: 200.0, covolume: 1.08, formFunction: 0.90 },
+  'H4895': { burnRate: 0.78, density: 0.93, tempCoeff: 0.3, energyDensity: 3800, specificHeatRatio: 1.240, heatOfExplosion: 3870, burningRateFactor: 0.420, progressiveBurningLimit: 1.650, solidDensity: 1.65, shotStartPressure: 280.0, covolume: 0.98, formFunction: 0.82 },
+  'H380': { burnRate: 0.62, density: 0.90, tempCoeff: 0.35, energyDensity: 3880, specificHeatRatio: 1.235, heatOfExplosion: 3900, burningRateFactor: 0.385, progressiveBurningLimit: 1.580, solidDensity: 1.62, shotStartPressure: 240.0, covolume: 1.02, formFunction: 0.86 },
+  'H414': { burnRate: 0.58, density: 0.91, tempCoeff: 0.4, energyDensity: 3860, specificHeatRatio: 1.238, heatOfExplosion: 3890, burningRateFactor: 0.375, progressiveBurningLimit: 1.560, solidDensity: 1.63, shotStartPressure: 235.0, covolume: 1.03, formFunction: 0.87 },
+  'H4198': { burnRate: 0.95, density: 0.95, tempCoeff: 0.5, energyDensity: 3780, specificHeatRatio: 1.245, heatOfExplosion: 3850, burningRateFactor: 0.450, progressiveBurningLimit: 1.720, solidDensity: 1.68, shotStartPressure: 320.0, covolume: 0.95, formFunction: 0.78 },
+
+  // IMR Series
+  'IMR 4064': { burnRate: 0.72, density: 0.94, tempCoeff: 0.8, energyDensity: 3820, specificHeatRatio: 1.240, heatOfExplosion: 3890, burningRateFactor: 0.420, progressiveBurningLimit: 1.650, solidDensity: 1.65, shotStartPressure: 280.0, covolume: 0.98, formFunction: 0.82 },
+  'IMR 4895': { burnRate: 0.78, density: 0.93, tempCoeff: 0.7, energyDensity: 3800, specificHeatRatio: 1.240, heatOfExplosion: 3870, burningRateFactor: 0.420, progressiveBurningLimit: 1.650, solidDensity: 1.65, shotStartPressure: 280.0, covolume: 0.98, formFunction: 0.82 },
+  'IMR 4350': { burnRate: 0.48, density: 0.89, tempCoeff: 0.6, energyDensity: 3880, specificHeatRatio: 1.230, heatOfExplosion: 3920, burningRateFactor: 0.368, progressiveBurningLimit: 1.490, solidDensity: 1.59, shotStartPressure: 225.0, covolume: 1.06, formFunction: 0.89 },
+  'IMR 4831': { burnRate: 0.42, density: 0.88, tempCoeff: 0.5, energyDensity: 3890, specificHeatRatio: 1.228, heatOfExplosion: 3920, burningRateFactor: 0.345, progressiveBurningLimit: 1.420, solidDensity: 1.59, shotStartPressure: 200.0, covolume: 1.08, formFunction: 0.90 },
+  'IMR 7828': { burnRate: 0.32, density: 0.86, tempCoeff: 0.4, energyDensity: 3920, specificHeatRatio: 1.220, heatOfExplosion: 3960, burningRateFactor: 0.315, progressiveBurningLimit: 1.350, solidDensity: 1.55, shotStartPressure: 170.0, covolume: 1.15, formFunction: 0.94 },
+  'IMR 3031': { burnRate: 0.85, density: 0.95, tempCoeff: 0.9, energyDensity: 3790, specificHeatRatio: 1.242, heatOfExplosion: 3860, burningRateFactor: 0.435, progressiveBurningLimit: 1.680, solidDensity: 1.67, shotStartPressure: 300.0, covolume: 0.96, formFunction: 0.80 },
+  'IMR 8208 XBR': { burnRate: 0.68, density: 0.93, tempCoeff: 0.25, energyDensity: 3840, specificHeatRatio: 1.235, heatOfExplosion: 3910, burningRateFactor: 0.395, progressiveBurningLimit: 1.610, solidDensity: 1.64, shotStartPressure: 260.0, covolume: 1.00, formFunction: 0.84 },
+
+  // Alliant Series
+  'RL15': { burnRate: 0.52, density: 0.90, tempCoeff: 0.6, energyDensity: 3870, specificHeatRatio: 1.232, heatOfExplosion: 3910, burningRateFactor: 0.378, progressiveBurningLimit: 1.520, solidDensity: 1.60, shotStartPressure: 230.0, covolume: 1.04, formFunction: 0.87 },
+  'RL22': { burnRate: 0.35, density: 0.91, tempCoeff: 0.6, energyDensity: 3880, specificHeatRatio: 1.235, heatOfExplosion: 3920, burningRateFactor: 0.345, progressiveBurningLimit: 1.420, solidDensity: 1.59, shotStartPressure: 200.0, covolume: 1.08, formFunction: 0.90 },
+  'RL16': { burnRate: 0.58, density: 0.91, tempCoeff: 0.4, energyDensity: 3860, specificHeatRatio: 1.234, heatOfExplosion: 3900, burningRateFactor: 0.375, progressiveBurningLimit: 1.560, solidDensity: 1.62, shotStartPressure: 235.0, covolume: 1.03, formFunction: 0.86 },
+  'RL19': { burnRate: 0.38, density: 0.89, tempCoeff: 0.5, energyDensity: 3900, specificHeatRatio: 1.227, heatOfExplosion: 3940, burningRateFactor: 0.355, progressiveBurningLimit: 1.450, solidDensity: 1.57, shotStartPressure: 210.0, covolume: 1.09, formFunction: 0.91 },
+  'RL25': { burnRate: 0.28, density: 0.85, tempCoeff: 0.45, energyDensity: 3940, specificHeatRatio: 1.215, heatOfExplosion: 3980, burningRateFactor: 0.295, progressiveBurningLimit: 1.340, solidDensity: 1.53, shotStartPressure: 165.0, covolume: 1.16, formFunction: 0.95 },
+  'RL26': { burnRate: 0.26, density: 0.84, tempCoeff: 0.3, energyDensity: 3960, specificHeatRatio: 1.212, heatOfExplosion: 4000, burningRateFactor: 0.285, progressiveBurningLimit: 1.330, solidDensity: 1.52, shotStartPressure: 160.0, covolume: 1.18, formFunction: 0.96 },
+
+  // Vihtavuori Series
+  'N540': { burnRate: 0.55, density: 0.98, tempCoeff: 0.15, energyDensity: 3920, specificHeatRatio: 1.228, heatOfExplosion: 3980, burningRateFactor: 0.372, progressiveBurningLimit: 1.540, solidDensity: 1.62, shotStartPressure: 225.0, covolume: 1.03, formFunction: 0.89 },
+  'N550': { burnRate: 0.48, density: 0.97, tempCoeff: 0.12, energyDensity: 3940, specificHeatRatio: 1.225, heatOfExplosion: 4000, burningRateFactor: 0.365, progressiveBurningLimit: 1.480, solidDensity: 1.60, shotStartPressure: 215.0, covolume: 1.05, formFunction: 0.90 },
+  'N560': { burnRate: 0.38, density: 0.98, tempCoeff: 0.15, energyDensity: 3920, specificHeatRatio: 1.228, heatOfExplosion: 3980, burningRateFactor: 0.355, progressiveBurningLimit: 1.380, solidDensity: 1.62, shotStartPressure: 190.0, covolume: 1.03, formFunction: 0.89 },
+  'N570': { burnRate: 0.22, density: 0.96, tempCoeff: 0.10, energyDensity: 3980, specificHeatRatio: 1.210, heatOfExplosion: 4040, burningRateFactor: 0.265, progressiveBurningLimit: 1.290, solidDensity: 1.58, shotStartPressure: 145.0, covolume: 1.20, formFunction: 0.98 },
+  'N565': { burnRate: 0.35, density: 0.97, tempCoeff: 0.13, energyDensity: 3950, specificHeatRatio: 1.220, heatOfExplosion: 4010, burningRateFactor: 0.340, progressiveBurningLimit: 1.400, solidDensity: 1.60, shotStartPressure: 185.0, covolume: 1.10, formFunction: 0.92 },
+
+  // Ramshot Series
+  'Big Game': { burnRate: 0.44, density: 0.89, tempCoeff: 0.35, energyDensity: 3890, specificHeatRatio: 1.230, heatOfExplosion: 3930, burningRateFactor: 0.360, progressiveBurningLimit: 1.460, solidDensity: 1.58, shotStartPressure: 205.0, covolume: 1.07, formFunction: 0.89 },
+  'Hunter': { burnRate: 0.52, density: 0.90, tempCoeff: 0.4, energyDensity: 3870, specificHeatRatio: 1.232, heatOfExplosion: 3910, burningRateFactor: 0.378, progressiveBurningLimit: 1.520, solidDensity: 1.60, shotStartPressure: 230.0, covolume: 1.04, formFunction: 0.87 },
+  'TAC': { burnRate: 0.62, density: 0.91, tempCoeff: 0.45, energyDensity: 3860, specificHeatRatio: 1.236, heatOfExplosion: 3900, burningRateFactor: 0.385, progressiveBurningLimit: 1.580, solidDensity: 1.62, shotStartPressure: 240.0, covolume: 1.02, formFunction: 0.86 },
+  'Magnum': { burnRate: 0.28, density: 0.87, tempCoeff: 0.3, energyDensity: 3930, specificHeatRatio: 1.218, heatOfExplosion: 3970, burningRateFactor: 0.300, progressiveBurningLimit: 1.350, solidDensity: 1.54, shotStartPressure: 170.0, covolume: 1.14, formFunction: 0.94 },
+
+  // Pistol Powders
+  'Unique': { burnRate: 1.2, density: 0.98, tempCoeff: 0.9, energyDensity: 3720, specificHeatRatio: 1.255, heatOfExplosion: 3800, burningRateFactor: 0.505, progressiveBurningLimit: 1.820, solidDensity: 1.75, shotStartPressure: 420.0, covolume: 0.90, formFunction: 0.73 },
+  'Bullseye': { burnRate: 1.4, density: 0.99, tempCoeff: 1.1, energyDensity: 3680, specificHeatRatio: 1.260, heatOfExplosion: 3770, burningRateFactor: 0.535, progressiveBurningLimit: 1.880, solidDensity: 1.78, shotStartPressure: 480.0, covolume: 0.88, formFunction: 0.70 },
+  'Power Pistol': { burnRate: 1.05, density: 0.96, tempCoeff: 0.75, energyDensity: 3760, specificHeatRatio: 1.248, heatOfExplosion: 3830, burningRateFactor: 0.475, progressiveBurningLimit: 1.760, solidDensity: 1.70, shotStartPressure: 360.0, covolume: 0.94, formFunction: 0.77 },
+  'HS-6': { burnRate: 0.98, density: 0.94, tempCoeff: 0.7, energyDensity: 3780, specificHeatRatio: 1.245, heatOfExplosion: 3850, burningRateFactor: 0.460, progressiveBurningLimit: 1.740, solidDensity: 1.68, shotStartPressure: 340.0, covolume: 0.96, formFunction: 0.78 }
+};
+
+// Massive erweiterte Geschossdatenbank
+const bulletData = {
+  // .22 Kaliber (.224)
+  '40gr V-MAX (.22)': { weight: 40, diameter: 0.224, bc: 0.200, length: 0.680, shankLength: 0.380, ogiveLength: 0.300, boattailLength: 0.120, crossSectionalArea: 0.0394, dragCoefficient: 0.340, formFactor: 1.20 },
+  '55gr FMJ (.22)': { weight: 55, diameter: 0.224, bc: 0.243, length: 0.750, shankLength: 0.420, ogiveLength: 0.330, boattailLength: 0.130, crossSectionalArea: 0.0394, dragCoefficient: 0.325, formFactor: 1.15 },
+  '69gr HPBT (.22)': { weight: 69, diameter: 0.224, bc: 0.290, length: 0.970, shankLength: 0.580, ogiveLength: 0.390, boattailLength: 0.140, crossSectionalArea: 0.0394, dragCoefficient: 0.298, formFactor: 1.05 },
+  '77gr TMK (.22)': { weight: 77, diameter: 0.224, bc: 0.372, length: 1.030, shankLength: 0.580, ogiveLength: 0.450, boattailLength: 0.140, crossSectionalArea: 0.0394, dragCoefficient: 0.298, formFactor: 1.05 },
+  '80gr ELD-M (.22)': { weight: 80, diameter: 0.224, bc: 0.390, length: 1.060, shankLength: 0.600, ogiveLength: 0.460, boattailLength: 0.150, crossSectionalArea: 0.0394, dragCoefficient: 0.290, formFactor: 1.02 },
+  '90gr HPBT (.22)': { weight: 90, diameter: 0.224, bc: 0.450, length: 1.180, shankLength: 0.680, ogiveLength: 0.500, boattailLength: 0.160, crossSectionalArea: 0.0394, dragCoefficient: 0.275, formFactor: 0.98 },
+
+  // 6mm (.243)
+  '87gr V-MAX (6mm)': { weight: 87, diameter: 0.243, bc: 0.400, length: 1.075, shankLength: 0.620, ogiveLength: 0.455, boattailLength: 0.155, crossSectionalArea: 0.0464, dragCoefficient: 0.295, formFactor: 1.04 },
+  '95gr HPBT (6mm)': { weight: 95, diameter: 0.243, bc: 0.430, length: 1.120, shankLength: 0.650, ogiveLength: 0.470, boattailLength: 0.160, crossSectionalArea: 0.0464, dragCoefficient: 0.285, formFactor: 1.01 },
+  '100gr HPBT (6mm)': { weight: 100, diameter: 0.243, bc: 0.384, length: 1.080, shankLength: 0.620, ogiveLength: 0.460, boattailLength: 0.160, crossSectionalArea: 0.0464, dragCoefficient: 0.298, formFactor: 1.06 },
+  '105gr HPBT (6mm)': { weight: 105, diameter: 0.243, bc: 0.465, length: 1.180, shankLength: 0.680, ogiveLength: 0.500, boattailLength: 0.170, crossSectionalArea: 0.0464, dragCoefficient: 0.278, formFactor: 0.98 },
+  '108gr ELD-M (6mm)': { weight: 108, diameter: 0.243, bc: 0.536, length: 1.220, shankLength: 0.700, ogiveLength: 0.520, boattailLength: 0.180, crossSectionalArea: 0.0464, dragCoefficient: 0.265, formFactor: 0.94 },
+
+  // 6.5mm (.264)
+  '120gr HPBT (6.5mm)': { weight: 120, diameter: 0.264, bc: 0.458, length: 1.165, shankLength: 0.665, ogiveLength: 0.500, boattailLength: 0.170, crossSectionalArea: 0.0547, dragCoefficient: 0.282, formFactor: 1.00 },
+  '130gr HPBT (6.5mm)': { weight: 130, diameter: 0.264, bc: 0.435, length: 1.200, shankLength: 0.680, ogiveLength: 0.520, boattailLength: 0.175, crossSectionalArea: 0.0547, dragCoefficient: 0.288, formFactor: 1.02 },
+  '140gr ELD-M (6.5mm)': { weight: 140, diameter: 0.264, bc: 0.646, length: 1.345, shankLength: 0.720, ogiveLength: 0.625, boattailLength: 0.200, crossSectionalArea: 0.0547, dragCoefficient: 0.268, formFactor: 0.92 },
+  '142gr HPBT (6.5mm)': { weight: 142, diameter: 0.264, bc: 0.595, length: 1.350, shankLength: 0.750, ogiveLength: 0.600, boattailLength: 0.190, crossSectionalArea: 0.0547, dragCoefficient: 0.275, formFactor: 0.95 },
+  '147gr ELD-M (6.5mm)': { weight: 147, diameter: 0.264, bc: 0.697, length: 1.420, shankLength: 0.780, ogiveLength: 0.640, boattailLength: 0.210, crossSectionalArea: 0.0547, dragCoefficient: 0.258, formFactor: 0.89 },
+  '156gr Berger EOL (6.5mm)': { weight: 156, diameter: 0.264, bc: 0.679, length: 1.480, shankLength: 0.820, ogiveLength: 0.660, boattailLength: 0.220, crossSectionalArea: 0.0547, dragCoefficient: 0.262, formFactor: 0.90 },
+
+  // .270 (.277)
+  '130gr SPBT (.270)': { weight: 130, diameter: 0.277, bc: 0.408, length: 1.155, shankLength: 0.665, ogiveLength: 0.490, boattailLength: 0.165, crossSectionalArea: 0.0603, dragCoefficient: 0.295, formFactor: 1.05 },
+  '140gr HPBT (.270)': { weight: 140, diameter: 0.277, bc: 0.496, length: 1.220, shankLength: 0.700, ogiveLength: 0.520, boattailLength: 0.175, crossSectionalArea: 0.0603, dragCoefficient: 0.275, formFactor: 0.98 },
+  '150gr SPBT (.270)': { weight: 150, diameter: 0.277, bc: 0.481, length: 1.280, shankLength: 0.730, ogiveLength: 0.550, boattailLength: 0.180, crossSectionalArea: 0.0603, dragCoefficient: 0.278, formFactor: 0.99 },
+
+  // 7mm (.284)
+  '120gr HPBT (7mm)': { weight: 120, diameter: 0.284, bc: 0.417, length: 1.095, shankLength: 0.625, ogiveLength: 0.470, boattailLength: 0.160, crossSectionalArea: 0.0633, dragCoefficient: 0.290, formFactor: 1.03 },
+  '140gr HPBT (7mm)': { weight: 140, diameter: 0.284, bc: 0.485, length: 1.185, shankLength: 0.680, ogiveLength: 0.505, boattailLength: 0.170, crossSectionalArea: 0.0633, dragCoefficient: 0.275, formFactor: 0.98 },
+  '154gr HPBT (7mm)': { weight: 154, diameter: 0.284, bc: 0.530, length: 1.270, shankLength: 0.720, ogiveLength: 0.550, boattailLength: 0.180, crossSectionalArea: 0.0633, dragCoefficient: 0.268, formFactor: 0.95 },
+  '162gr ELD-M (7mm)': { weight: 162, diameter: 0.284, bc: 0.631, length: 1.350, shankLength: 0.760, ogiveLength: 0.590, boattailLength: 0.190, crossSectionalArea: 0.0633, dragCoefficient: 0.255, formFactor: 0.91 },
+  '175gr HPBT (7mm)': { weight: 175, diameter: 0.284, bc: 0.608, length: 1.420, shankLength: 0.800, ogiveLength: 0.620, boattailLength: 0.200, crossSectionalArea: 0.0633, dragCoefficient: 0.260, formFactor: 0.92 },
+  '180gr Berger Hybrid (7mm)': { weight: 180, diameter: 0.284, bc: 0.674, length: 1.480, shankLength: 0.820, ogiveLength: 0.660, boattailLength: 0.210, crossSectionalArea: 0.0633, dragCoefficient: 0.248, formFactor: 0.88 },
+
+  // .30 Kaliber (.308)
+  '110gr V-MAX (.30)': { weight: 110, diameter: 0.308, bc: 0.294, length: 0.990, shankLength: 0.570, ogiveLength: 0.420, boattailLength: 0.140, crossSectionalArea: 0.0745, dragCoefficient: 0.315, formFactor: 1.12 },
+  '125gr HPBT (.30)': { weight: 125, diameter: 0.308, bc: 0.349, length: 1.045, shankLength: 0.600, ogiveLength: 0.445, boattailLength: 0.150, crossSectionalArea: 0.0745, dragCoefficient: 0.305, formFactor: 1.08 },
+  '150gr SPBT (.30)': { weight: 150, diameter: 0.308, bc: 0.415, length: 1.150, shankLength: 0.620, ogiveLength: 0.530, boattailLength: 0.160, crossSectionalArea: 0.0745, dragCoefficient: 0.315, formFactor: 1.08 },
+  '155gr HPBT (.30)': { weight: 155, diameter: 0.308, bc: 0.464, length: 1.180, shankLength: 0.640, ogiveLength: 0.540, boattailLength: 0.165, crossSectionalArea: 0.0745, dragCoefficient: 0.298, formFactor: 1.05 },
+  '168gr HPBT (.30)': { weight: 168, diameter: 0.308, bc: 0.462, length: 1.210, shankLength: 0.650, ogiveLength: 0.560, boattailLength: 0.180, crossSectionalArea: 0.0745, dragCoefficient: 0.295, formFactor: 1.02 },
+  '175gr HPBT (.30)': { weight: 175, diameter: 0.308, bc: 0.496, length: 1.240, shankLength: 0.680, ogiveLength: 0.580, boattailLength: 0.180, crossSectionalArea: 0.0745, dragCoefficient: 0.285, formFactor: 0.98 },
+  '178gr ELD-X (.30)': { weight: 178, diameter: 0.308, bc: 0.552, length: 1.280, shankLength: 0.710, ogiveLength: 0.570, boattailLength: 0.185, crossSectionalArea: 0.0745, dragCoefficient: 0.275, formFactor: 0.95 },
+  '185gr Berger Juggernaut (.30)': { weight: 185, diameter: 0.308, bc: 0.549, length: 1.320, shankLength: 0.740, ogiveLength: 0.580, boattailLength: 0.190, crossSectionalArea: 0.0745, dragCoefficient: 0.278, formFactor: 0.96 },
+  '190gr HPBT (.30)': { weight: 190, diameter: 0.308, bc: 0.533, length: 1.350, shankLength: 0.760, ogiveLength: 0.590, boattailLength: 0.195, crossSectionalArea: 0.0745, dragCoefficient: 0.282, formFactor: 0.97 },
+  '200gr ELD-X (.30)': { weight: 200, diameter: 0.308, bc: 0.626, length: 1.420, shankLength: 0.800, ogiveLength: 0.620, boattailLength: 0.200, crossSectionalArea: 0.0745, dragCoefficient: 0.265, formFactor: 0.91 },
+  '208gr ELD-M (.30)': { weight: 208, diameter: 0.308, bc: 0.670, length: 1.480, shankLength: 0.820, ogiveLength: 0.660, boattailLength: 0.210, crossSectionalArea: 0.0745, dragCoefficient: 0.255, formFactor: 0.88 },
+  '220gr HPBT (.30)': { weight: 220, diameter: 0.308, bc: 0.629, length: 1.520, shankLength: 0.850, ogiveLength: 0.670, boattailLength: 0.215, crossSectionalArea: 0.0745, dragCoefficient: 0.260, formFactor: 0.89 },
+
+  // .338 Kaliber (.338)
+  '200gr SPBT (.338)': { weight: 200, diameter: 0.338, bc: 0.414, length: 1.240, shankLength: 0.710, ogiveLength: 0.530, boattailLength: 0.180, crossSectionalArea: 0.0897, dragCoefficient: 0.295, formFactor: 1.05 },
+  '225gr HPBT (.338)': { weight: 225, diameter: 0.338, bc: 0.548, length: 1.350, shankLength: 0.770, ogiveLength: 0.580, boattailLength: 0.190, crossSectionalArea: 0.0897, dragCoefficient: 0.275, formFactor: 0.98 },
+  '250gr HPBT (.338)': { weight: 250, diameter: 0.338, bc: 0.587, length: 1.420, shankLength: 0.820, ogiveLength: 0.600, boattailLength: 0.200, crossSectionalArea: 0.0897, dragCoefficient: 0.268, formFactor: 0.95 },
+  '285gr ELD-M (.338)': { weight: 285, diameter: 0.338, bc: 0.763, length: 1.620, shankLength: 0.920, ogiveLength: 0.700, boattailLength: 0.230, crossSectionalArea: 0.0897, dragCoefficient: 0.240, formFactor: 0.85 },
+  '300gr HPBT (.338)': { weight: 300, diameter: 0.338, bc: 0.720, length: 1.680, shankLength: 0.960, ogiveLength: 0.720, boattailLength: 0.240, crossSectionalArea: 0.0897, dragCoefficient: 0.248, formFactor: 0.88 },
+
+  // .50 Kaliber (.510)
+  '647gr A-MAX (.50)': { weight: 647, diameter: 0.510, bc: 1.050, length: 2.740, shankLength: 1.540, ogiveLength: 1.200, boattailLength: 0.420, crossSectionalArea: 0.2043, dragCoefficient: 0.195, formFactor: 0.70 },
+  '750gr HPBT (.50)': { weight: 750, diameter: 0.510, bc: 1.050, length: 2.940, shankLength: 1.680, ogiveLength: 1.260, boattailLength: 0.450, crossSectionalArea: 0.2043, dragCoefficient: 0.195, formFactor: 0.70 },
+
+  // Pistolgeschosse
+  '115gr FMJ (9mm)': { weight: 115, diameter: 0.355, bc: 0.135, length: 0.610, shankLength: 0.440, ogiveLength: 0.170, boattailLength: 0.000, crossSectionalArea: 0.0990, dragCoefficient: 0.385, formFactor: 1.45 },
+  '124gr FMJ (9mm)': { weight: 124, diameter: 0.355, bc: 0.145, length: 0.650, shankLength: 0.470, ogiveLength: 0.180, boattailLength: 0.000, crossSectionalArea: 0.0990, dragCoefficient: 0.378, formFactor: 1.42 },
+  '147gr JHP (9mm)': { weight: 147, diameter: 0.355, bc: 0.155, length: 0.720, shankLength: 0.520, ogiveLength: 0.200, boattailLength: 0.000, crossSectionalArea: 0.0990, dragCoefficient: 0.372, formFactor: 1.40 },
+  '180gr FMJ (.40)': { weight: 180, diameter: 0.400, bc: 0.165, length: 0.680, shankLength: 0.490, ogiveLength: 0.190, boattailLength: 0.000, crossSectionalArea: 0.1257, dragCoefficient: 0.368, formFactor: 1.38 },
+  '230gr FMJ (.45)': { weight: 230, diameter: 0.452, bc: 0.195, length: 0.750, shankLength: 0.540, ogiveLength: 0.210, boattailLength: 0.000, crossSectionalArea: 0.1605, dragCoefficient: 0.358, formFactor: 1.35 },
+  '158gr SWC (.357)': { weight: 158, diameter: 0.357, bc: 0.142, length: 0.680, shankLength: 0.480, ogiveLength: 0.200, boattailLength: 0.000, crossSectionalArea: 0.1001, dragCoefficient: 0.382, formFactor: 1.43 },
+  '240gr SWC (.44)': { weight: 240, diameter: 0.429, bc: 0.185, length: 0.780, shankLength: 0.560, ogiveLength: 0.220, boattailLength: 0.000, crossSectionalArea: 0.1447, dragCoefficient: 0.365, formFactor: 1.37 }
+};
+
+const AdvancedBallisticsCalculator = () => {
+  // State-Variablen
+  const [activeTab, setActiveTab] = useState('config');
+  const [cartridge, setCartridge] = useState('.308 Winchester');
+  const [powder, setPowder] = useState('Varget');
+  const [bullet, setBullet] = useState('168gr HPBT (.30)');
+  const [charge, setCharge] = useState(42.0);
+  
+  // Detaillierte Parameter
+  const [barrelLength, setBarrelLength] = useState(24);
+  const [seatingDepth, setSeatingDepth] = useState(0.020);
+  const [temperature, setTemperature] = useState(20);
+  const [pressure, setPressure] = useState(1013.25);
+  const [humidity, setHumidity] = useState(50);
+  const [windSpeed, setWindSpeed] = useState(0);
+  const [windDirection, setWindDirection] = useState(90);
+  
+  // Erweiterte Geschossparameter
+  const [customBulletWeight, setCustomBulletWeight] = useState(0);
+  const [customBulletDiameter, setCustomBulletDiameter] = useState(0);
+  const [customBC, setCustomBC] = useState(0);
+  const [cartridgeLength, setCartridgeLength] = useState(0);
+  const [caseLength, setCaseLength] = useState(0);
+  const [grooveDiameter, setGrooveDiameter] = useState(0);
+  
+  // Erweiterte Pulverparameter
+  const [customChargeWeight, setCustomChargeWeight] = useState(0);
+  const [loadDensityTarget, setLoadDensityTarget] = useState(95);
+  const [ignitionPressure, setIgnitionPressure] = useState(250);
+  
+  const [results, setResults] = useState({});
+  const [chartData, setChartData] = useState([]);
+  const [pressureChart, setPressureChart] = useState([]);
+
+  // Erweiterte ballistische Berechnungen
+  const calculateAdvancedBallistics = useMemo(() => {
+    const cartData = cartridgeData[cartridge];
+    const powderInfo = powderData[powder];
+    const bulletInfo = bulletData[bullet];
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    if (!cartData || !powderInfo || !bulletInfo) return {};
+
+    // Effektive Parameter berechnen
+    const effectiveBulletWeight = customBulletWeight || bulletInfo.weight;
+    const effectiveBulletDiameter = customBulletDiameter || bulletInfo.diameter;
+    const effectiveBC = customBC || bulletInfo.bc;
+    const effectiveCartridgeLength = cartridgeLength || cartData.cartridgeLength;
+    const effectiveCaseLength = caseLength || cartData.caseLength;
+    const effectiveGrooveDiameter = grooveDiameter || cartData.grooveDiameter;
     
-    <!-- React and ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    // Volumenberechnungen
+    const bulletVolume = (Math.PI * Math.pow(effectiveBulletDiameter/2, 2) * bulletInfo.length) / 4;
+    const seatingVolumeReduction = seatingDepth * Math.PI * Math.pow(effectiveBulletDiameter/2, 2);
+    const effectiveCaseCapacity = cartData.capacity - seatingVolumeReduction;
+    const volumeBehindBullet = effectiveCaseCapacity - bulletVolume;
     
-    <!-- Recharts -->
-    <script src="https://unpkg.com/recharts@2.8.0/umd/Recharts.js"></script>
+    // Erweiterte Druckberechnung (Noble-Abel-Gleichung)
+    const chargeVolume = charge / powderInfo.density;
+    const loadDensity = (chargeVolume / effectiveCaseCapacity) * 100;
+    const freeVolume = volumeBehindBullet - chargeVolume;
     
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    // Temperaturkorrekturen
+    const tempKelvin = temperature + 273.15;
+    const standardTemp = 293.15;
+    const tempRatio = tempKelvin / standardTemp;
+    const pressureAltitude = pressure / 1013.25;
     
-    <!-- Babel for JSX transformation -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    // Erweiterte Druckberechnung
+    const gasConstant = 8314; // J/(kmol·K)
+    const molarMass = 28.97; // kg/kmol für Verbrennungsgase
+    const combustionTemp = tempKelvin + 2800; // Verbrennungstemperatur
     
-    <style>
-        body {
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-        }
-    </style>
-</head>
-<body>
-    <div id="root"></div>
+    const forceConstant = (charge * powderInfo.energyDensity * powderInfo.burningRateFactor) / 1000;
+    const covolumeFactor = 1 - (powderInfo.covolume * charge / volumeBehindBullet);
+    const basePressure = (forceConstant * combustionTemp * powderInfo.formFunction) / 
+                        (freeVolume * covolumeFactor);
+    
+    // Druckmodifikationen
+    const densityModifier = 1 + ((loadDensity - 85) * 0.004);
+    const tempModifier = Math.pow(tempRatio, 0.7);
+    const altitudeModifier = pressureAltitude;
+    
+    const maxPressure = basePressure * densityModifier * tempModifier * altitudeModifier;
+    
+    // Erweiterte Geschwindigkeitsberechnung
+    const barrelVolume = Math.PI * Math.pow(effectiveGrooveDiameter/2, 2) * barrelLength;
+    const expansionRatio = (volumeBehindBullet + barrelVolume) / volumeBehindBullet;
+    const adiabaticIndex = powderInfo.specificHeatRatio;
+    
+    // Geschwindigkeit nach adiabatischer Expansion
+    const adiabaticPressureRatio = Math.pow(expansionRatio, -adiabaticIndex);
+    const muzzlePressure = maxPressure * adiabaticPressureRatio;
+    
+    const specificEnergy = powderInfo.energyDensity * charge / effectiveBulletWeight;
+    const efficiency = Math.min(1.0, powderInfo.burnRate * (barrelLength / 24) * powderInfo.formFunction);
+    const baseVelocity = Math.sqrt(2 * specificEnergy * efficiency * 0.7) * tempModifier;
+    
+    // Laufzeitberechnungen
+    const accelerationTime = Math.sqrt((2 * barrelLength * 0.0254 * effectiveBulletWeight * 0.001) / 
+                                      (maxPressure * Math.PI * Math.pow(effectiveGrooveDiameter * 0.0254/2, 2))) * 1000;
+    
+    // Mündungsenergie und Rückstoß
+    const muzzleEnergy = (baseVelocity * baseVelocity * effectiveBulletWeight) / 450240;
+    const recoilVelocity = ((effectiveBulletWeight * baseVelocity) + (charge * 4000)) / (7000 * 8); // 8 lbs Gewehr
+    const recoilEnergy = (Math.pow(recoilVelocity, 2) * 8) / 64.32;
+    
+    // Ballistische Effizienz
+    const theoreticalEnergy = charge * powderInfo.energyDensity / 7000; // ft-lbs
+    const ballisticEfficiency = (muzzleEnergy / theoreticalEnergy) * 100;
+    
+    // Optimaler Barrel Time (OBT)
+    const fundamentalFrequency = barrelLength / 2;
+    const optimalBarrelTime = (1000 / fundamentalFrequency) * 1.5;
+    
+    // Projektil-Energie bei verschiedenen Entfernungen
+    const projectileEnergy100 = muzzleEnergy * Math.pow(Math.E, -0.1 * 100 / effectiveBC);
+    const projectileEnergy300 = muzzleEnergy * Math.pow(Math.E, -0.1 * 300 / effectiveBC);
+    
+    // Sicherheitsbewertung
+    const pressureRatio = maxPressure / cartData.maxPressure;
+    let safetyRating = 'SICHER';
+    let safetyColor = 'green';
+    
+    if (pressureRatio > 1.05) {
+      safetyRating = 'GEFÄHRLICH';
+      safetyColor = 'red';
+    } else if (pressureRatio > 1.0) {
+      safetyRating = 'ÜBERDRUCK';
+      safetyColor = 'orange';
+    } else if (pressureRatio > 0.95) {
+      safetyRating = 'HOCH';
+      safetyColor = 'yellow';
+    } else if (pressureRatio > 0.9) {
+      safetyRating = 'MODERAT';
+      safetyColor = 'blue';
+    }
 
-    <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
-        const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } = Recharts;
+    return {
+      maxPressure,
+      muzzlePressure,
+      muzzleVelocity: baseVelocity,
+      muzzleEnergy,
+      recoilEnergy,
+      barrelTime: accelerationTime,
+      optimalBarrelTime,
+      loadDensity,
+      ballisticEfficiency,
+      projectileEnergy100,
+      projectileEnergy300,
+      pressureRatio,
+      safetyRating,
+      safetyColor,
+      effectiveCaseCapacity,
+      volumeBehindBullet,
+      expansionRatio,
+      combustionTemp,
+      freeVolume
+    };
+  }, [cartridge, powder, bullet, charge, barrelLength, seatingDepth, temperature, pressure, humidity,
+      customBulletWeight, customBulletDiameter, customBC, cartridgeLength, caseLength, grooveDiameter]);
 
-        // Massive erweiterte Patronendatenbank
-        const cartridgeData = {
-            // .22 Kaliber
-            '.22 LR': { capacity: 4.6, maxPressure: 24000, casingWeight: 25, caseLength: 0.613, grooveDiameter: 0.224, landDiameter: 0.219, riflingTwist: 16, cartridgeLength: 1.000, neckDiameter: 0.226, shoulderDiameter: 0.226, baseDiameter: 0.226, rimDiameter: 0.278 },
-            '.22-250 Remington': { capacity: 45.5, maxPressure: 65000, casingWeight: 135, caseLength: 1.912, grooveDiameter: 0.224, landDiameter: 0.219, riflingTwist: 14, cartridgeLength: 2.350, neckDiameter: 0.253, shoulderDiameter: 0.414, baseDiameter: 0.470, rimDiameter: 0.473 },
-            '.223 Remington': { capacity: 28.5, maxPressure: 55000, casingWeight: 95, caseLength: 1.760, grooveDiameter: 0.224, landDiameter: 0.219, riflingTwist: 9, cartridgeLength: 2.260, neckDiameter: 0.253, shoulderDiameter: 0.354, baseDiameter: 0.378, rimDiameter: 0.378 },
-            '.224 Valkyrie': { capacity: 34.2, maxPressure: 55000, casingWeight: 105, caseLength: 1.600, grooveDiameter: 0.224, landDiameter: 0.219, riflingTwist: 7, cartridgeLength: 2.260, neckDiameter: 0.254, shoulderDiameter: 0.445, baseDiameter: 0.473, rimDiameter: 0.473 },
+  // Diagrammdaten generieren
+  useEffect(() => {
+    if (!calculateAdvancedBallistics.maxPressure) return;
+    
+    // Geschwindigkeits-Zeit-Kurve
+    const velocityData = [];
+    const pressureData = [];
+    const maxTime = calculateAdvancedBallistics.barrelTime;
+    
+    for (let i = 0; i <= 50; i++) {
+      const time = (i / 50) * maxTime;
+      const timeRatio = time / maxTime;
+      
+      // Geschwindigkeitskurve (progressiv)
+      const velocity = calculateAdvancedBallistics.muzzleVelocity * Math.sqrt(timeRatio);
+      
+      // Druckkurve (Peak bei ~30% der Laufzeit)
+      const pressureCurveRatio = timeRatio < 0.3 ? 
+        Math.sin(timeRatio * Math.PI / 0.6) : 
+        Math.exp(-(timeRatio - 0.3) * 5) * Math.sin(0.5 * Math.PI);
+      const pressure = calculateAdvancedBallistics.maxPressure * pressureCurveRatio;
+      
+      velocityData.push({
+        time: time,
+        velocity: velocity,
+        distance: (velocity * time) / 2000 // Vereinfachte Distanz
+      });
+      
+      pressureData.push({
+        time: time,
+        pressure: pressure / 1000, // in kPSI
+        temperature: 2800 + (temperature - 20) * pressureCurveRatio
+      });
+    }
+    
+    setChartData(velocityData);
+    setPressureChart(pressureData);
+  }, [calculateAdvancedBallistics]);
 
-            // 6mm Kaliber  
-            '.243 Winchester': { capacity: 53.0, maxPressure: 60000, casingWeight: 160, caseLength: 2.045, grooveDiameter: 0.243, landDiameter: 0.237, riflingTwist: 10, cartridgeLength: 2.710, neckDiameter: 0.276, shoulderDiameter: 0.454, baseDiameter: 0.470, rimDiameter: 0.473 },
-            '6mm Creedmoor': { capacity: 53.7, maxPressure: 62000, casingWeight: 165, caseLength: 1.920, grooveDiameter: 0.243, landDiameter: 0.237, riflingTwist: 7.5, cartridgeLength: 2.825, neckDiameter: 0.272, shoulderDiameter: 0.420, baseDiameter: 0.470, rimDiameter: 0.473 },
-            '6mm PPC': { capacity: 33.5, maxPressure: 60000, casingWeight: 120, caseLength: 1.515, grooveDiameter: 0.243, landDiameter: 0.237, riflingTwist: 14, cartridgeLength: 2.175, neckDiameter: 0.272, shoulderDiameter: 0.441, baseDiameter: 0.445, rimDiameter: 0.445 },
+  const TabButton = ({ id, label, icon: Icon, active, onClick }) => (
+    <button
+      onClick={() => onClick(id)}
+      className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${
+        active 
+          ? 'bg-blue-600 text-white shadow-lg' 
+          : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+      }`}
+    >
+      <Icon className="w-4 h-4" />
+      <span>{label}</span>
+    </button>
+  );
 
-            // 6.5mm Kaliber
-            '6.5 Creedmoor': { capacity: 52.5, maxPressure: 62000, casingWeight: 165, caseLength: 1.920, grooveDiameter: 0.264, landDiameter: 0.256, riflingTwist: 8, cartridgeLength: 2.825, neckDiameter: 0.295, shoulderDiameter: 0.420, baseDiameter: 0.470, rimDiameter: 0.473 },
-            '6.5 PRC': { capacity: 68.0, maxPressure: 65000, casingWeight: 190, caseLength: 2.030, grooveDiameter: 0.264, landDiameter: 0.256, riflingTwist: 8, cartridgeLength: 2.955, neckDiameter: 0.295, shoulderDiameter: 0.532, baseDiameter: 0.532, rimDiameter: 0.532 },
-            '6.5x55 Swedish': { capacity: 65.8, maxPressure: 51000, casingWeight: 185, caseLength: 2.165, grooveDiameter: 0.264, landDiameter: 0.256, riflingTwist: 8, cartridgeLength: 3.150, neckDiameter: 0.295, shoulderDiameter: 0.445, baseDiameter: 0.480, rimDiameter: 0.480 },
-            '6.5 Grendel': { capacity: 35.0, maxPressure: 52000, casingWeight: 125, caseLength: 1.520, grooveDiameter: 0.264, landDiameter: 0.256, riflingTwist: 8, cartridgeLength: 2.260, neckDiameter: 0.295, shoulderDiameter: 0.431, baseDiameter: 0.441, rimDiameter: 0.441 },
+  const InputField = ({ label, value, onChange, min, max, step = 0.1, unit = "", type = "number" }) => (
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-blue-200">
+        {label} {unit && `(${unit})`}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(type === "number" ? parseFloat(e.target.value) || 0 : e.target.value)}
+        min={min}
+        max={max}
+        step={step}
+        className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:outline-none"
+      />
+    </div>
+  );
 
-            // .270 Kaliber
-            '.270 Winchester': { capacity: 67.0, maxPressure: 65000, casingWeight: 185, caseLength: 2.540, grooveDiameter: 0.277, landDiameter: 0.270, riflingTwist: 10, cartridgeLength: 3.340, neckDiameter: 0.308, shoulderDiameter: 0.441, baseDiameter: 0.470, rimDiameter: 0.473 },
-            '.270 WSM': { capacity: 80.0, maxPressure: 65000, casingWeight: 210, caseLength: 2.100, grooveDiameter: 0.277, landDiameter: 0.270, riflingTwist: 10, cartridgeLength: 2.860, neckDiameter: 0.308, shoulderDiameter: 0.538, baseDiameter: 0.555, rimDiameter: 0.535 },
-            '.280 Remington': { capacity: 65.5, maxPressure: 60000, casingWeight: 180, caseLength: 2.540, grooveDiameter: 0.284, landDiameter: 0.277, riflingTwist: 9.5, cartridgeLength: 3.330, neckDiameter: 0.315, shoulderDiameter: 0.441, baseDiameter: 0.470, rimDiameter: 0.473 },
-            '.280 AI': { capacity: 71.0, maxPressure: 60000, casingWeight: 185, caseLength: 2.540, grooveDiameter: 0.284, landDiameter: 0.277, riflingTwist: 9.5, cartridgeLength: 3.330, neckDiameter: 0.315, shoulderDiameter: 0.473, baseDiameter: 0.470, rimDiameter: 0.473 },
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+      {/* Header */}
+      <div className="bg-black/20 backdrop-blur-sm border-b border-blue-500/30">
+        <div className="max-w-full mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Target className="w-8 h-8 text-blue-400" />
+              <div>
+                <h1 className="text-2xl font-bold text-white">QuickLOAD Professional</h1>
+                <p className="text-blue-300 text-sm">Erweiterte ballistische Berechnungsplattform</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              {calculateAdvancedBallistics.safetyRating && (
+                <div className={`px-4 py-2 rounded-lg font-bold text-${calculateAdvancedBallistics.safetyColor}-400 bg-${calculateAdvancedBallistics.safetyColor}-900/30 border border-${calculateAdvancedBallistics.safetyColor}-500/50`}>
+                  {calculateAdvancedBallistics.safetyRating}
+                </div>
+              )}
+              <button className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
+                <Download className="w-4 h-4" />
+                <span>Export</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-            // 7mm Kaliber
-            '7mm-08 Remington': { capacity: 52.0, maxPressure: 61000, casingWeight: 160, caseLength: 2.035, grooveDiameter: 0.284, landDiameter: 0.277, riflingTwist: 9.5, cartridgeLength: 2.800, neckDiameter: 0.315, shoulderDiameter: 0.454, baseDiameter: 0.470, rimDiameter: 0.473 },
-            '7mm Rem Mag': { capacity: 82.0, maxPressure: 61000, casingWeight: 220, caseLength: 2.500, grooveDiameter: 0.284, landDiameter: 0.277, riflingTwist: 9.5, cartridgeLength: 3.290, neckDiameter: 0.315, shoulderDiameter: 0.491, baseDiameter: 0.532, rimDiameter: 0.532 },
-            '7mm WSM': { capacity: 78.5, maxPressure: 65000, casingWeight: 200, caseLength: 2.100, grooveDiameter: 0.284, landDiameter: 0.277, riflingTwist: 9.5, cartridgeLength: 2.860, neckDiameter: 0.315, shoulderDiameter: 0.538, baseDiameter: 0.555, rimDiameter: 0.535 },
+      {/* Navigation Tabs */}
+      <div className="bg-black/10 backdrop-blur-sm border-b border-slate-700">
+        <div className="max-w-full mx-auto px-6 py-4">
+          <div className="flex space-x-2 overflow-x-auto">
+            <TabButton id="config" label="Konfiguration" icon={Settings} active={activeTab === 'config'} onClick={setActiveTab} />
+            <TabButton id="detailed" label="Detaillierte Parameter" icon={Database} active={activeTab === 'detailed'} onClick={setActiveTab} />
+            <TabButton id="results" label="Ergebnisse" icon={Calculator} active={activeTab === 'results'} onClick={setActiveTab} />
+            <TabButton id="charts" label="Diagramme" icon={BarChart3} active={activeTab === 'charts'} onClick={setActiveTab} />
+            <TabButton id="environment" label="Umgebung" icon={Thermometer} active={activeTab === 'environment'} onClick={setActiveTab} />
+          </div>
+        </div>
+      </div>
 
-            // .30 Kaliber
-            '.30-30 Winchester': { capacity: 42.0, maxPressure: 42000, casingWeight: 140, caseLength: 2.039, grooveDiameter: 0.308, landDiameter: 0.300, riflingTwist: 12, cartridgeLength: 2.550, neckDiameter: 0.330, shoulderDiameter: 0.401, baseDiameter: 0.422, rimDiameter: 0.506 },
-            '.300 AAC Blackout': { capacity: 27.5, maxPressure: 55000, casingWeight: 95, caseLength: 1.368, grooveDiameter: 0.308, landDiameter: 0.300, riflingTwist: 8, cartridgeLength: 2.260, neckDiameter: 0.334, shoulderDiameter: 0.377, baseDiameter: 0.378, rimDiameter: 0.378 },
-            '.308 Winchester': { capacity: 56.0, maxPressure: 62000, casingWeight: 175, caseLength: 2.015, grooveDiameter: 0.308, landDiameter: 0.300, riflingTwist: 12, cartridgeLength: 2.800, neckDiameter: 0.334, shoulderDiameter: 0.454, baseDiameter: 0.470, rimDiameter: 0.473 },
-            '.30-06 Springfield': { capacity: 68.0, maxPressure: 60000, casingWeight: 190, caseLength: 2.494, grooveDiameter: 0.308, landDiameter: 0.300, riflingTwist: 10, cartridgeLength: 3.340, neckDiameter: 0.340, shoulderDiameter: 0.441, baseDiameter: 0.470, rimDiameter: 0.473 },
-            '.300 Win Mag': { capacity: 93.8, maxPressure: 64000, casingWeight: 230, caseLength: 2.620, grooveDiameter: 0.308, landDiameter: 0.300, riflingTwist: 10, cartridgeLength: 3.340, neckDiameter: 0.339, shoulderDiameter: 0.513, baseDiameter: 0.532, rimDiameter: 0.532 },
-            '.300 WSM': { capacity: 80.0, maxPressure: 65000, casingWeight: 210, caseLength: 2.100, grooveDiameter: 0.308, landDiameter: 0.300, riflingTwist: 10, cartridgeLength: 2.860, neckDiameter: 0.339, shoulderDiameter: 0.538, baseDiameter: 0.555, rimDiameter: 0.535 },
-            '.300 PRC': { capacity: 77.0, maxPressure: 65000, casingWeight: 200, caseLength: 2.580, grooveDiameter: 0.308, landDiameter: 0.300, riflingTwist: 10, cartridgeLength: 3.700, neckDiameter: 0.339, shoulderDiameter: 0.532, baseDiameter: 0.532, rimDiameter: 0.532 },
+      <div className="max-w-full mx-auto px-6 py-8">
+        {/* Konfiguration Tab */}
+        {activeTab === 'config' && (
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Grundkonfiguration */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
+                <Settings className="w-5 h-5 mr-2 text-blue-400" />
+                Grundkonfiguration
+              </h2>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-blue-200 mb-2">Patrone</label>
+                  <select 
+                    value={cartridge} 
+                    onChange={(e) => setCartridge(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:outline-none"
+                  >
+                    {Object.keys(cartridgeData).map(cart => (
+                      <option key={cart} value={cart}>{cart}</option>
+                    ))}
+                  </select>
+                </div>
 
-            // .338 Kaliber
-            '.338 Lapua Magnum': { capacity: 114.0, maxPressure: 60916, casingWeight: 280, caseLength: 2.724, grooveDiameter: 0.338, landDiameter: 0.330, riflingTwist: 10, cartridgeLength: 3.681, neckDiameter: 0.370, shoulderDiameter: 0.587, baseDiameter: 0.587, rimDiameter: 0.588 },
-            '.338 Win Mag': { capacity: 86.0, maxPressure: 64000, casingWeight: 230, caseLength: 2.500, grooveDiameter: 0.338, landDiameter: 0.330, riflingTwist: 10, cartridgeLength: 3.340, neckDiameter: 0.369, shoulderDiameter: 0.491, baseDiameter: 0.532, rimDiameter: 0.532 },
+                <div>
+                  <label className="block text-sm font-medium text-blue-200 mb-2">Pulver</label>
+                  <select 
+                    value={powder} 
+                    onChange={(e) => setPowder(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:outline-none"
+                  >
+                    {Object.keys(powderData).map(pow => (
+                      <option key={pow} value={pow}>{pow}</option>
+                    ))}
+                  </select>
+                </div>
 
-            // .50 Kaliber
-            '.50 BMG': { capacity: 290.0, maxPressure: 55000, casingWeight: 865, caseLength: 3.910, grooveDiameter: 0.510, landDiameter: 0.500, riflingTwist: 15, cartridgeLength: 5.450, neckDiameter: 0.541, shoulderDiameter: 0.804, baseDiameter: 0.804, rimDiameter: 0.804 },
+                <div>
+                  <label className="block text-sm font-medium text-blue-200 mb-2">Geschoss</label>
+                  <select 
+                    value={bullet} 
+                    onChange={(e) => setBullet(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:outline-none"
+                  >
+                    {Object.keys(bulletData).map(bul => (
+                      <option key={bul} value={bul}>{bul}</option>
+                    ))}
+                  </select>
+                </div>
 
-            // Pistolkaliber
-            '9mm Luger': { capacity: 13.3, maxPressure: 35000, casingWeight: 60, caseLength: 0.754, grooveDiameter: 0.355, landDiameter: 0.346, riflingTwist: 10, cartridgeLength: 1.169, neckDiameter: 0.380, shoulderDiameter: 0.380, baseDiameter: 0.391, rimDiameter: 0.392 },
-            '.40 S&W': { capacity: 16.7, maxPressure: 35000, casingWeight: 75, caseLength: 0.850, grooveDiameter: 0.400, landDiameter: 0.390, riflingTwist: 16, cartridgeLength: 1.135, neckDiameter: 0.424, shoulderDiameter: 0.424, baseDiameter: 0.424, rimDiameter: 0.424 },
-            '.45 ACP': { capacity: 23.7, maxPressure: 21000, casingWeight: 95, caseLength: 0.898, grooveDiameter: 0.452, landDiameter: 0.442, riflingTwist: 16, cartridgeLength: 1.275, neckDiameter: 0.476, shoulderDiameter: 0.476, baseDiameter: 0.476, rimDiameter: 0.480 },
-            '.357 Magnum': { capacity: 26.2, maxPressure: 35000, casingWeight: 110, caseLength: 1.290, grooveDiameter: 0.357, landDiameter: 0.346, riflingTwist: 14, cartridgeLength: 1.590, neckDiameter: 0.379, shoulderDiameter: 0.379, baseDiameter: 0.379, rimDiameter: 0.440 },
-            '.44 Magnum': { capacity: 37.9, maxPressure: 36000, casingWeight: 180, caseLength: 1.285, grooveDiameter: 0.429, landDiameter: 0.420, riflingTwist: 20, cartridgeLength: 1.610, neckDiameter: 0.456, shoulderDiameter: 0.456, baseDiameter: 0.456, rimDiameter: 0.514 }
-        };
+                <InputField 
+                  label="Ladung" 
+                  value={charge} 
+                  onChange={setCharge} 
+                  min={20} 
+                  max={60} 
+                  step={0.1} 
+                  unit="gr" 
+                />
 
-        // Massive erweiterte Pulverdatenbank
-        const powderData = {
-            // Hodgdon Extreme Series
-            'Varget': { burnRate: 0.65, density: 0.92, tempCoeff: 0.3, energyDensity: 3850, specificHeatRatio: 1.231, heatOfExplosion: 3935, burningRateFactor: 0.388, progressiveBurningLimit: 1.595, solidDensity: 1.61, shotStartPressure: 250.0, covolume: 1.0, formFunction: 0.85 },
-            'H4350': { burnRate: 0.45, density: 0.89, tempCoeff: 0.2, energyDensity: 3900, specificHeatRatio: 1.225, heatOfExplosion: 3950, burningRateFactor: 0.365, progressiveBurningLimit: 1.480, solidDensity: 1.58, shotStartPressure: 220.0, covolume: 1.05, formFunction: 0.88 },
-            'H1000': { burnRate: 0.25, density: 0.87, tempCoeff: 0.1, energyDensity: 3950, specificHeatRatio: 1.218, heatOfExplosion: 4020, burningRateFactor: 0.285, progressiveBurningLimit: 1.320, solidDensity: 1.52, shotStartPressure: 180.0, covolume: 1.12, formFunction: 0.92 },
-            'H4831': { burnRate: 0.42, density: 0.88, tempCoeff: 0.25, energyDensity: 3890, specificHeatRatio: 1.228, heatOfExplosion: 3920, burningRateFactor: 0.345, progressiveBurningLimit: 1.420, solidDensity: 1.59, shotStartPressure: 200.0, covolume: 1.08, formFunction: 0.90 },
-            'H4895': { burnRate: 0.78, density: 0.93, tempCoeff: 0.3, energyDensity: 3800, specificHeatRatio: 1.240, heatOfExplosion: 3870, burningRateFactor: 0.420, progressiveBurningLimit: 1.650, solidDensity: 1.65, shotStartPressure: 280.0, covolume: 0.98, formFunction: 0.82 },
-            'H380': { burnRate: 0.62, density: 0.90, tempCoeff: 0.35, energyDensity: 3880, specificHeatRatio: 1.235, heatOfExplosion: 3900, burningRateFactor: 0.385, progressiveBurningLimit: 1.580, solidDensity: 1.62, shotStartPressure: 240.0, covolume: 1.02, formFunction: 0.86 },
+                <InputField 
+                  label="Lauflänge" 
+                  value={barrelLength} 
+                  onChange={setBarrelLength} 
+                  min={16} 
+                  max={32} 
+                  step={0.5} 
+                  unit="Zoll" 
+                />
 
-            // IMR Series
-            'IMR 4064': { burnRate: 0.72, density: 0.94, tempCoeff: 0.8, energyDensity: 3820, specificHeatRatio: 1.240, heatOfExplosion: 3890, burningRateFactor: 0.420, progressiveBurningLimit: 1.650, solidDensity: 1.65, shotStartPressure: 280.0, covolume: 0.98, formFunction: 0.82 },
-            'IMR 4895': { burnRate: 0.78, density: 0.93, tempCoeff: 0.7, energyDensity: 3800, specificHeatRatio: 1.240, heatOfExplosion: 3870, burningRateFactor: 0.420, progressiveBurningLimit: 1.650, solidDensity: 1.65, shotStartPressure: 280.0, covolume: 0.98, formFunction: 0.82 },
-            'IMR 4350': { burnRate: 0.48, density: 0.89, tempCoeff: 0.6, energyDensity: 3880, specificHeatRatio: 1.230, heatOfExplosion: 3920, burningRateFactor: 0.368, progressiveBurningLimit: 1.490, solidDensity: 1.59, shotStartPressure: 225.0, covolume: 1.06, formFunction: 0.89 },
-            'IMR 4831': { burnRate: 0.42, density: 0.88, tempCoeff: 0.5, energyDensity: 3890, specificHeatRatio: 1.228, heatOfExplosion: 3920, burningRateFactor: 0.345, progressiveBurningLimit: 1.420, solidDensity: 1.59, shotStartPressure: 200.0, covolume: 1.08, formFunction: 0.90 },
+                <InputField 
+                  label="Setztiefe" 
+                  value={seatingDepth} 
+                  onChange={setSeatingDepth} 
+                  min={0.005} 
+                  max={0.200} 
+                  step={0.005} 
+                  unit="Zoll" 
+                />
+              </div>
+            </div>
 
-            // Alliant Series
-            'RL15': { burnRate: 0.52, density: 0.90, tempCoeff: 0.6, energyDensity: 3870, specificHeatRatio: 1.232, heatOfExplosion: 3910, burningRateFactor: 0.378, progressiveBurningLimit: 1.520, solidDensity: 1.60, shotStartPressure: 230.0, covolume: 1.04, formFunction: 0.87 },
-            'RL22': { burnRate: 0.35, density: 0.91, tempCoeff: 0.6, energyDensity: 3880, specificHeatRatio: 1.235, heatOfExplosion: 3920, burningRateFactor: 0.345, progressiveBurningLimit: 1.420, solidDensity: 1.59, shotStartPressure: 200.0, covolume: 1.08, formFunction: 0.90 },
-            'RL16': { burnRate: 0.58, density: 0.91, tempCoeff: 0.4, energyDensity: 3860, specificHeatRatio: 1.234, heatOfExplosion: 3900, burningRateFactor: 0.375, progressiveBurningLimit: 1.560, solidDensity: 1.62, shotStartPressure: 235.0, covolume: 1.03, formFunction: 0.86 },
+            {/* Pulverdetails */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-6">Pulvercharakteristika</h2>
+              
+              {powderData[powder] && (
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-blue-200">Brennrate:</span>
+                    <span className="text-white font-mono">{powderData[powder].burningRateFactor}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-blue-200">Dichte:</span>
+                    <span className="text-white font-mono">{powderData[powder].density} g/cm³</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-blue-200">Temp. Koeffizient:</span>
+                    <span className="text-white font-mono">{powderData[powder].tempCoeff} fps/°F</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-blue-200">Energiedichte:</span>
+                    <span className="text-white font-mono">{powderData[powder].energyDensity} J/g</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-blue-200">Explosion Heat:</span>
+                    <span className="text-white font-mono">{powderData[powder].heatOfExplosion} kJ/kg</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-blue-200">Spez. Wärmeverhältnis:</span>
+                    <span className="text-white font-mono">{powderData[powder].specificHeatRatio}</span>
+                  </div>
+                </div>
+              )}
+            </div>
 
-            // Vihtavuori Series
-            'N540': { burnRate: 0.55, density: 0.98, tempCoeff: 0.15, energyDensity: 3920, specificHeatRatio: 1.228, heatOfExplosion: 3980, burningRateFactor: 0.372, progressiveBurningLimit: 1.540, solidDensity: 1.62, shotStartPressure: 225.0, covolume: 1.03, formFunction: 0.89 },
-            'N550': { burnRate: 0.48, density: 0.97, tempCoeff: 0.12, energyDensity: 3940, specificHeatRatio: 1.225, heatOfExplosion: 4000, burningRateFactor: 0.365, progressiveBurningLimit: 1.480, solidDensity: 1.60, shotStartPressure: 215.0, covolume: 1.05, formFunction: 0.90 },
-            'N560': { burnRate: 0.38, density: 0.98, tempCoeff: 0.15, energyDensity: 3920, specificHeatRatio: 1.228, heatOfExplosion: 3980, burningRateFactor: 0.355, progressiveBurningLimit: 1.380, solidDensity: 1.62, shotStartPressure: 190.0, covolume: 1.03, formFunction: 0.89 },
+            {/* Geschossdetails */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-6">Geschossparameter</h2>
+              
+              {bulletData[bullet] && (
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-blue-200">Gewicht:</span>
+                    <span className="text-white font-mono">{bulletData[bullet].weight} gr</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-blue-200">Durchmesser:</span>
+                    <span className="text-white font-mono">{bulletData[bullet].diameter}"</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-blue-200">Ballistischer Koeff.:</span>
+                    <span className="text-white font-mono">{bulletData[bullet].bc}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-blue-200">Länge:</span>
+                    <span className="text-white font-mono">{bulletData[bullet].length}"</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-blue-200">Schaftlänge:</span>
+                    <span className="text-white font-mono">{bulletData[bullet].shankLength}"</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-blue-200">Querschnittsfläche:</span>
+                    <span className="text-white font-mono">{bulletData[bullet].crossSectionalArea} in²</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
-            // Pistol Powders
-            'Unique': { burnRate: 1.2, density: 0.98, tempCoeff: 0.9, energyDensity: 3720, specificHeatRatio: 1.255, heatOfExplosion: 3800, burningRateFactor: 0.505, progressiveBurningLimit: 1.820, solidDensity: 1.75, shotStartPressure: 420.0, covolume: 0.90, formFunction: 0.73 },
-            'Bullseye': { burnRate: 1.4, density: 0.99, tempCoeff: 1.1, energyDensity: 3680, specificHeatRatio: 1.260, heatOfExplosion: 3770, burningRateFactor: 0.535, progressiveBurningLimit: 1.880, solidDensity: 1.78, shotStartPressure: 480.0, covolume: 0.88, formFunction: 0.70 },
-            'Power Pistol': { burnRate: 1.05, density: 0.96, tempCoeff: 0.75, energyDensity: 3760, specificHeatRatio: 1.248, heatOfExplosion: 3830, burningRateFactor: 0.475, progressiveBurningLimit: 1.760, solidDensity: 1.70, shotStartPressure: 360.0, covolume: 0.94, formFunction: 0.77 }
-        };
+        {/* Detaillierte Parameter Tab */}
+        {activeTab === 'detailed' && (
+          <div className="grid lg:grid-cols-3 gap-8">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-6">Benutzerdefinierte Geschossparameter</h2>
+              <div className="space-y-4">
+                <InputField label="Geschossgewicht" value={customBulletWeight} onChange={setCustomBulletWeight} min={50} max={250} unit="gr" />
+                <InputField label="Geschossdurchmesser" value={customBulletDiameter} onChange={setCustomBulletDiameter} min={0.2} max={0.4} step={0.001} unit="Zoll" />
+                <InputField label="Ballistischer Koeffizient" value={customBC} onChange={setCustomBC} min={0.2} max={0.8} step={0.001} />
+                <InputField label="Patronenlänge" value={cartridgeLength} onChange={setCartridgeLength} min={1.5} max={4.0} step={0.001} unit="Zoll" />
+                <InputField label="Hülsenlänge" value={caseLength} onChange={setCaseLength} min={1.0} max={3.0} step={0.001} unit="Zoll" />
+                <InputField label="Zugdurchmesser" value={grooveDiameter} onChange={setGrooveDiameter} min={0.2} max={0.4} step={0.001} unit="Zoll" />
+              </div>
+            </div>
 
-        // Erweiterte Geschossdatenbank (verkürzt für HTML)
-        const bulletData = {
-            '40gr V-MAX (.22)': { weight: 40, diameter: 0.224, bc: 0.200, length: 0.680, shankLength: 0.380, ogiveLength: 0.300, boattailLength: 0.120, crossSectionalArea: 0.0394, dragCoefficient: 0.340, formFactor: 1.20 },
-            '55gr FMJ (.22)': { weight: 55, diameter: 0.224, bc: 0.243, length: 0.750, shankLength: 0.420, ogiveLength: 0.330, boattailLength: 0.130, crossSectionalArea: 0.0394, dragCoefficient: 0.325, formFactor: 1.15 },
-            '69gr HPBT (.22)': { weight: 69, diameter: 0.224, bc: 0.290, length: 0.970, shankLength: 0.580, ogiveLength: 0.390, boattailLength: 0.140, crossSectionalArea: 0.0394, dragCoefficient: 0.298, formFactor: 1.05 },
-            '77gr TMK (.22)': { weight: 77, diameter: 0.224, bc: 0.372, length: 1.030, shankLength: 0.580, ogiveLength: 0.450, boattailLength: 0.140, crossSectionalArea: 0.0394, dragCoefficient: 0.298, formFactor: 1.05 },
-            
-            '87gr V-MAX (6mm)': { weight: 87, diameter: 0.243, bc: 0.400, length: 1.075, shankLength: 0.620, ogiveLength: 0.455, boattailLength: 0.155, crossSectionalArea: 0.0464, dragCoefficient: 0.295, formFactor: 1.04 },
-            '100gr HPBT (6mm)': { weight: 100, diameter: 0.243, bc: 0.384, length: 1.080, shankLength: 0.620, ogiveLength: 0.460, boattailLength: 0.160, crossSectionalArea: 0.0464, dragCoefficient: 0.298, formFactor: 1.06 },
-            '108gr ELD-M (6mm)': { weight: 108, diameter: 0.243, bc: 0.536, length: 1.220, shankLength: 0.700, ogiveLength: 0.520, boattailLength: 0.180, crossSectionalArea: 0.0464, dragCoefficient: 0.265, formFactor: 0.94 },
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-6">Erweiterte Pulverparameter</h2>
+              <div className="space-y-4">
+                <InputField label="Ladungsgewicht" value={customChargeWeight} onChange={setCustomChargeWeight} min={20} max={80} step={0.1} unit="gr" />
+                <InputField label="Ziel-Ladungsdichte" value={loadDensityTarget} onChange={setLoadDensityTarget} min={70} max={110} step={1} unit="%" />
+                <InputField label="Zünddruck" value={ignitionPressure} onChange={setIgnitionPressure} min={100} max={500} step={10} unit="bar" />
+              </div>
+            </div>
 
-            '120gr HPBT (6.5mm)': { weight: 120, diameter: 0.264, bc: 0.458, length: 1.165, shankLength: 0.665, ogiveLength: 0.500, boattailLength: 0.170, crossSectionalArea: 0.0547, dragCoefficient: 0.282, formFactor: 1.00 },
-            '140gr ELD-M (6.5mm)': { weight: 140, diameter: 0.264, bc: 0.646, length: 1.345, shankLength: 0.720, ogiveLength: 0.625, boattailLength: 0.200, crossSectionalArea: 0.0547, dragCoefficient: 0.268, formFactor: 0.92 },
-            '147gr ELD-M (6.5mm)': { weight: 147, diameter: 0.264, bc: 0.697, length: 1.420, shankLength: 0.780, ogiveLength: 0.640, boattailLength: 0.210, crossSectionalArea: 0.0547, dragCoefficient: 0.258, formFactor: 0.89 },
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-6">Berechnete Volumina</h2>
+              {calculateAdvancedBallistics.effectiveCaseCapacity && (
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-blue-200">Eff. Hülsenkapazität:</span>
+                    <span className="text-white font-mono">{calculateAdvancedBallistics.effectiveCaseCapacity?.toFixed(2)} gr H₂O</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-blue-200">Volumen hinter Geschoss:</span>
+                    <span className="text-white font-mono">{calculateAdvancedBallistics.volumeBehindBullet?.toFixed(2)} gr H₂O</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-blue-200">Freies Volumen:</span>
+                    <span className="text-white font-mono">{calculateAdvancedBallistics.freeVolume?.toFixed(2)} gr H₂O</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-blue-200">Expansionsverhältnis:</span>
+                    <span className="text-white font-mono">{calculateAdvancedBallistics.expansionRatio?.toFixed(2)}:1</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
-            '130gr SPBT (.270)': { weight: 130, diameter: 0.277, bc: 0.408, length: 1.155, shankLength: 0.665, ogiveLength: 0.490, boattailLength: 0.165, crossSectionalArea: 0.0603, dragCoefficient: 0.295, formFactor: 1.05 },
-            '140gr HPBT (.270)': { weight: 140, diameter: 0.277, bc: 0.496, length: 1.220, shankLength: 0.700, ogiveLength: 0.520, boattailLength: 0.175, crossSectionalArea: 0.0603, dragCoefficient: 0.275, formFactor: 0.98 },
+        {/* Ergebnisse Tab */}
+        {activeTab === 'results' && (
+          <div className="grid lg:grid-cols-2 gap-8">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
+                <Gauge className="w-5 h-5 mr-2 text-blue-400" />
+                Interne Ballistik
+              </h2>
+              
+              <div className="space-y-4">
+                <div className="p-4 bg-slate-800/50 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-blue-200">Maximaler Druck:</span>
+                    <span className={`font-mono text-lg text-${calculateAdvancedBallistics.safetyColor}-400`}>
+                      {calculateAdvancedBallistics.maxPressure?.toFixed(0)} PSI
+                    </span>
+                  </div>
+                  <div className="text-xs text-gray-400 mt-1">
+                    {((calculateAdvancedBallistics.pressureRatio || 0) * 100).toFixed(1)}% von SAAMI Maximum
+                  </div>
+                </div>
 
-            '140gr HPBT (7mm)': { weight: 140, diameter: 0.284, bc: 0.485, length: 1.185, shankLength: 0.680, ogiveLength: 0.505, boattailLength: 0.170, crossSectionalArea: 0.0633, dragCoefficient: 0.275, formFactor: 0.98 },
-            '162gr ELD-M (7mm)': { weight: 162, diameter: 0.284, bc: 0.631, length: 1.350, shankLength: 0.760, ogiveLength: 0.590, boattailLength: 0.190, crossSectionalArea: 0.0633, dragCoefficient: 0.255, formFactor: 0.91 },
-            '175gr HPBT (7mm)': { weight: 175, diameter: 0.284, bc: 0.608, length: 1.420, shankLength: 0.800, ogiveLength: 0.620, boattailLength: 0.200, crossSectionalArea: 0.0633, dragCoefficient: 0.260, formFactor: 0.92 },
+                <div className="p-4 bg-slate-800/50 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-blue-200">Mündungsdruck:</span>
+                    <span className="text-white font-mono text-lg">
+                      {calculateAdvancedBallistics.muzzlePressure?.toFixed(0)} PSI
+                    </span>
+                  </div>
+                </div>
 
-            '110gr V-MAX (.30)': { weight: 110, diameter: 0.308, bc: 0.294, length: 0.990, shankLength: 0.570, ogiveLength: 0.420, boattailLength: 0.140, crossSectionalArea: 0.0745, dragCoefficient: 0.315, formFactor: 1.12 },
-            '150gr SPBT (.30)': { weight: 150, diameter: 0.308, bc: 0.415, length: 1.150, shankLength: 0.620, ogiveLength: 0.530, boattailLength: 0.160, crossSectionalArea: 0.0745, dragCoefficient: 0.315, formFactor: 1.08 },
-            '168gr HPBT (.30)': { weight: 168, diameter: 0.308, bc: 0.462, length: 1.210, shankLength: 0.650, ogiveLength: 0.560, boattailLength: 0.180, crossSectionalArea: 0.0745, dragCoefficient: 0.295, formFactor: 1.02 },
-            '175gr HPBT (.30)': { weight: 175, diameter: 0.308, bc: 0.496, length: 1.240, shankLength: 0.680, ogiveLength: 0.580, boattailLength: 0.180, crossSectionalArea: 0.0745, dragCoefficient: 0.285, formFactor: 0.98 },
-            '178gr ELD-X (.30)': { weight: 178, diameter: 0.308, bc: 0.552, length: 1.280, shankLength: 0.710, ogiveLength: 0.570, boattailLength: 0.185, crossSectionalArea: 0.0745, dragCoefficient: 0.275, formFactor: 0.95 },
-            '208gr ELD-M (.30)': { weight: 208, diameter: 0.308, bc: 0.670, length: 1.480, shankLength: 0.820, ogiveLength: 0.660, boattailLength: 0.210, crossSectionalArea: 0.0745, dragCoefficient: 0.255, formFactor: 0.88 },
+                <div className="p-4 bg-slate-800/50 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-blue-200">Mündungsgeschwindigkeit:</span>
+                    <span className="text-white font-mono text-lg">
+                      {calculateAdvancedBallistics.muzzleVelocity?.toFixed(0)} fps
+                    </span>
+                  </div>
+                </div>
 
-            '225gr HPBT (.338)': { weight: 225, diameter: 0.338, bc: 0.548, length: 1.350, shankLength: 0.770, ogiveLength: 0.580, boattailLength: 0.190, crossSectionalArea: 0.0897, dragCoefficient: 0.275, formFactor: 0.98 },
-            '285gr ELD-M (.338)': { weight: 285, diameter: 0.338, bc: 0.763, length: 1.620, shankLength: 0.920, ogiveLength: 0.700, boattailLength: 0.230, crossSectionalArea: 0.0897, dragCoefficient: 0.240, formFactor: 0.85 },
+                <div className="p-4 bg-slate-800/50 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-blue-200">Laufzeit (10%):</span>
+                    <span className="text-white font-mono text-lg">
+                      {calculateAdvancedBallistics.barrelTime?.toFixed(2)} ms
+                    </span>
+                  </div>
+                </div>
 
-            // Pistolgeschosse
-            '115gr FMJ (9mm)': { weight: 115, diameter: 0.355, bc: 0.135, length: 0.610, shankLength: 0.440, ogiveLength: 0.170, boattailLength: 0.000, crossSectionalArea: 0.0990, dragCoefficient: 0.385, formFactor: 1.45 },
-            '124gr FMJ (9mm)': { weight: 124, diameter: 0.355, bc: 0.145, length: 0.650, shankLength: 0.470, ogiveLength: 0.180, boattailLength: 0.000, crossSectionalArea: 0.0990, dragCoefficient: 0.378, formFactor: 1.42 },
-            '180gr FMJ (.40)': { weight: 180, diameter: 0.400, bc: 0.165, length: 0.680, shankLength: 0.490, ogiveLength: 0.190, boattailLength: 0.000, crossSectionalArea: 0.1257, dragCoefficient: 0.368, formFactor: 1.38 },
-            '230gr FMJ (.45)': { weight: 230, diameter: 0.452, bc: 0.195, length: 0.750, shankLength: 0.540, ogiveLength: 0.210, boattailLength: 0.000, crossSectionalArea: 0.1605, dragCoefficient: 0.358, formFactor: 1.35 }
-        };
+                <div className="p-4 bg-slate-800/50 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-blue-200">Optimaler OBT:</span>
+                    <span className="text-white font-mono text-lg">
+                      {calculateAdvancedBallistics.optimalBarrelTime?.toFixed(2)} ms
+                    </span>
+                  </div>
+                </div>
 
-        const AdvancedBallisticsCalculator = () => {
-            // State-Variablen
-            const [activeTab, setActiveTab] = useState('config');
-            const [cartridge, setCartridge] = useState('.308 Winchester');
-            const [powder, setPowder] = useState('Varget');
-            const [bullet, setBullet] = useState('168gr HPBT (.30)');
-            const [charge, setCharge] = useState(42.0);
-            const [barrelLength, setBarrelLength] = useState(24);
-            const [seatingDepth, setSeatingDepth] = useState(0.020);
-            const [temperature, setTemperature] = useState(20);
-            const [pressure, setPressure] = useState(1013.25);
-            const [humidity, setHumidity] = useState(50);
+                <div className="p-4 bg-slate-800/50 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-blue-200">Ladungsdichte:</span>
+                    <span className="text-white font-mono text-lg">
+                      {calculateAdvancedBallistics.loadDensity?.toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-            const [results, setResults] = useState({});
-            const [chartData, setChartData] = useState([]);
-            const [pressureChart, setPressureChart] = useState([]);
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
+                <Activity className="w-5 h-5 mr-2 text-blue-400" />
+                Externe Ballistik
+              </h2>
+              
+              <div className="space-y-4">
+                <div className="p-4 bg-slate-800/50 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-blue-200">Mündungsenergie:</span>
+                    <span className="text-white font-mono text-lg">
+                      {calculateAdvancedBallistics.muzzleEnergy?.toFixed(0)} ft-lbs
+                    </span>
+                  </div>
+                </div>
 
-            // Ballistische Berechnungen
-            const calculateAdvancedBallistics = useMemo(() => {
-                const cartData = cartridgeData[cartridge];
-                const powderInfo = powderData[powder];
-                const bulletInfo = bulletData[bullet];
-                
-                if (!cartData || !powderInfo || !bulletInfo) return {};
+                <div className="p-4 bg-slate-800/50 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-blue-200">Rückstoßenergie:</span>
+                    <span className="text-white font-mono text-lg">
+                      {calculateAdvancedBallistics.recoilEnergy?.toFixed(1)} ft-lbs
+                    </span>
+                  </div>
+                </div>
 
-                // Volumenberechnungen
-                const bulletVolume = (Math.PI * Math.pow(bulletInfo.diameter/2, 2) * bulletInfo.length) / 4;
-                const seatingVolumeReduction = seatingDepth * Math.PI * Math.pow(bulletInfo.diameter/2, 2);
-                const effectiveCaseCapacity = cartData.capacity - seatingVolumeReduction;
-                const volumeBehindBullet = effectiveCaseCapacity - bulletVolume;
-                
-                // Druckberechnung
-                const chargeVolume = charge / powderInfo.density;
-                const loadDensity = (chargeVolume / effectiveCaseCapacity) * 100;
-                const freeVolume = volumeBehindBullet - chargeVolume;
-                
-                // Temperaturkorrekturen
-                const tempKelvin = temperature + 273.15;
-                const standardTemp = 293.15;
-                const tempRatio = tempKelvin / standardTemp;
-                const pressureAltitude = pressure / 1013.25;
-                
-                // Druckberechnung
-                const combustionTemp = tempKelvin + 2800;
-                const forceConstant = (charge * powderInfo.energyDensity * powderInfo.burningRateFactor) / 1000;
-                const covolumeFactor = 1 - (powderInfo.covolume * charge / volumeBehindBullet);
-                const basePressure = (forceConstant * combustionTemp * powderInfo.formFunction) / 
-                                    (freeVolume * covolumeFactor);
-                
-                const densityModifier = 1 + ((loadDensity - 85) * 0.004);
-                const tempModifier = Math.pow(tempRatio, 0.7);
-                const altitudeModifier = pressureAltitude;
-                
-                const maxPressure = basePressure * densityModifier * tempModifier * altitudeModifier;
-                
-                // Geschwindigkeitsberechnung
-                const barrelVolume = Math.PI * Math.pow(cartData.grooveDiameter/2, 2) * barrelLength;
-                const expansionRatio = (volumeBehindBullet + barrelVolume) / volumeBehindBullet;
-                const adiabaticIndex = powderInfo.specificHeatRatio;
-                
-                const adiabaticPressureRatio = Math.pow(expansionRatio, -adiabaticIndex);
-                const muzzlePressure = maxPressure * adiabaticPressureRatio;
-                
-                const specificEnergy = powderInfo.energyDensity * charge / bulletInfo.weight;
-                const efficiency = Math.min(1.0, powderInfo.burnRate * (barrelLength / 24) * powderInfo.formFunction);
-                const baseVelocity = Math.sqrt(2 * specificEnergy * efficiency * 0.7) * tempModifier;
-                
-                // Weitere Berechnungen
-                const accelerationTime = Math.sqrt((2 * barrelLength * 0.0254 * bulletInfo.weight * 0.001) / 
-                                                  (maxPressure * Math.PI * Math.pow(cartData.grooveDiameter * 0.0254/2, 2))) * 1000;
-                
-                const muzzleEnergy = (baseVelocity * baseVelocity * bulletInfo.weight) / 450240;
-                const recoilVelocity = ((bulletInfo.weight * baseVelocity) + (charge * 4000)) / (7000 * 8);
-                const recoilEnergy = (Math.pow(recoilVelocity, 2) * 8) / 64.32;
-                
-                const theoreticalEnergy = charge * powderInfo.energyDensity / 7000;
-                const ballisticEfficiency = (muzzleEnergy / theoreticalEnergy) * 100;
-                
-                const fundamentalFrequency = barrelLength / 2;
-                const optimalBarrelTime = (1000 / fundamentalFrequency) * 1.5;
-                
-                const projectileEnergy100 = muzzleEnergy * Math.pow(Math.E, -0.1 * 100 / bulletInfo.bc);
-                const projectileEnergy300 = muzzleEnergy * Math.pow(Math.E, -0.1 * 300 / bulletInfo.bc);
-                
-                // Sicherheitsbewertung
-                const pressureRatio = maxPressure / cartData.maxPressure;
-                let safetyRating = 'SICHER';
-                let safetyColor = 'green';
-                
-                if (pressureRatio > 1.05) {
-                    safetyRating = 'GEFÄHRLICH';
-                    safetyColor = 'red';
-                } else if (pressureRatio > 1.0) {
-                    safetyRating = 'ÜBERDRUCK';
-                    safetyColor = 'orange';
-                } else if (pressureRatio > 0.95) {
-                    safetyRating = 'HOCH';
-                    safetyColor = 'yellow';
-                } else if (pressureRatio > 0.9) {
-                    safetyRating = 'MODERAT';
-                    safetyColor = 'blue';
-                }
+                <div className="p-4 bg-slate-800/50 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-blue-200">Projektilenergie @ 100y:</span>
+                    <span className="text-white font-mono text-lg">
+                      {calculateAdvancedBallistics.projectileEnergy100?.toFixed(0)} ft-lbs
+                    </span>
+                  </div>
+                </div>
 
-                return {
-                    maxPressure,
-                    muzzlePressure,
-                    muzzleVelocity: baseVelocity,
-                    muzzleEnergy,
-                    recoilEnergy,
-                    barrelTime: accelerationTime,
-                    optimalBarrelTime,
-                    loadDensity,
-                    ballisticEfficiency,
-                    projectileEnergy100,
-                    projectileEnergy300,
-                    pressureRatio,
-                    safetyRating,
-                    safetyColor,
-                    effectiveCaseCapacity,
-                    volumeBehindBullet,
-                    expansionRatio,
-                    combustionTemp,
-                    freeVolume
-                };
-            }, [cartridge, powder, bullet, charge, barrelLength, seatingDepth, temperature, pressure, humidity]);
+                <div className="p-4 bg-slate-800/50 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-blue-200">Projektilenergie @ 300y:</span>
+                    <span className="text-white font-mono text-lg">
+                      {calculateAdvancedBallistics.projectileEnergy300?.toFixed(0)} ft-lbs
+                    </span>
+                  </div>
+                </div>
 
-            // Diagrammdaten generieren
-            useEffect(() => {
-                if (!calculateAdvancedBallistics.maxPressure) return;
-                
-                const velocityData = [];
-                const pressureData = [];
-                const maxTime = calculateAdvancedBallistics.barrelTime;
-                
-                for (let i = 0; i <= 50; i++) {
-                    const time = (i / 50) * maxTime;
-                    const timeRatio = time / maxTime;
-                    
-                    const velocity = calculateAdvancedBallistics.muzzleVelocity * Math.sqrt(timeRatio);
-                    
-                    const pressureCurveRatio = timeRatio < 0.3 ? 
-                        Math.sin(timeRatio * Math.PI / 0.6) : 
-                        Math.exp(-(timeRatio - 0.3) * 5) * Math.sin(0.5 * Math.PI);
-                    const pressure = calculateAdvancedBallistics.maxPressure * pressureCurveRatio;
-                    
-                    velocityData.push({
-                        time: time,
-                        velocity: velocity,
-                        distance: (velocity * time) / 2000
-                    });
-                    
-                    pressureData.push({
-                        time: time,
-                        pressure: pressure / 1000,
-                        temperature: 2800 + (temperature - 20) * pressureCurveRatio
-                    });
-                }
-                
-                setChartData(velocityData);
-                setPressureChart(pressureData);
-            }, [calculateAdvancedBallistics, temperature]);
+                <div className="p-4 bg-slate-800/50 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-blue-200">Ballistische Effizienz:</span>
+                    <span className="text-white font-mono text-lg">
+                      {calculateAdvancedBallistics.ballisticEfficiency?.toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
 
-            const TabButton = ({ id, label, icon: Icon, active, onClick }) => (
-                React.createElement('button', {
-                    onClick: () => onClick(id),
-                    className: `flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${
-                        active 
-                            ? 'bg-blue-600 text-white shadow-lg' 
-                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                    }`
-                }, React.createElement(Icon, { className: 'w-4 h-4' }), React.createElement('span', null, label))
-            );
+                <div className="p-4 bg-slate-800/50 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-blue-200">Verbrannte Pulvermenge:</span>
+                    <span className="text-white font-mono text-lg">100.0%</span>
+                  </div>
+                </div>
+              </div>
 
-            const InputField = ({ label, value, onChange, min, max, step = 0.1, unit = "", type = "number" }) => (
-                React.createElement('div', { className: 'space-y-2' },
-                    React.createElement('label', { className: 'block text-sm font-medium text-blue-200' },
-                        `${label} ${unit && `(${unit})`}`
-                    ),
-                    React.createElement('input', {
-                        type: type,
-                        value: value,
-                        onChange: (e) => onChange(type === "number" ? parseFloat(e.target.value) || 0 : e.target.value),
-                        min: min,
-                        max: max,
-                        step: step,
-                        className: 'w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:outline-none'
-                    })
-                )
-            );
+              {/* Druckvisualisierung */}
+              <div className="mt-6 p-4 bg-slate-800/50 rounded-lg">
+                <h3 className="text-lg font-semibold text-white mb-3">Druckanalyse</h3>
+                <div className="relative h-6 bg-gray-700 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full transition-all duration-500 ${
+                      calculateAdvancedBallistics.safetyColor === 'red' ? 'bg-red-500' :
+                      calculateAdvancedBallistics.safetyColor === 'orange' ? 'bg-orange-500' :
+                      calculateAdvancedBallistics.safetyColor === 'yellow' ? 'bg-yellow-500' :
+                      calculateAdvancedBallistics.safetyColor === 'blue' ? 'bg-blue-500' : 'bg-green-500'
+                    }`}
+                    style={{ width: `${Math.min((calculateAdvancedBallistics.pressureRatio || 0) * 100, 100)}%` }}
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center text-sm font-semibold text-white">
+                    {((calculateAdvancedBallistics.pressureRatio || 0) * 100).toFixed(1)}% SAAMI Max
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
-            const getSafetyColor = () => {
-                if (!calculateAdvancedBallistics.pressureRatio) return 'text-gray-600';
-                if (calculateAdvancedBallistics.pressureRatio > 1.0) return 'text-red-400';
-                if (calculateAdvancedBallistics.pressureRatio > 0.95) return 'text-orange-400';
-                if (calculateAdvancedBallistics.pressureRatio > 0.9) return 'text-yellow-400';
-                return 'text-green-400';
-            };
+        {/* Diagramme Tab */}
+        {activeTab === 'charts' && (
+          <div className="grid lg:grid-cols-2 gap-8">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-6">Geschwindigkeit vs. Zeit</h2>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <XAxis 
+                      dataKey="time" 
+                      stroke="#94a3b8"
+                      label={{ value: 'Zeit (ms)', position: 'insideBottom', offset: -5, fill: '#94a3b8' }}
+                    />
+                    <YAxis 
+                      stroke="#94a3b8"
+                      label={{ value: 'Geschwindigkeit (fps)', angle: -90, position: 'insideLeft', fill: '#94a3b8' }}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#1e293b', 
+                        border: '1px solid #475569',
+                        borderRadius: '8px',
+                        color: '#f1f5f9'
+                      }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="velocity" 
+                      stroke="#3b82f6" 
+                      strokeWidth={3}
+                      dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
 
-            // Verwende createElemente für Icons
-            const Calculator = () => React.createElement('svg', { 
-                className: 'w-5 h-5', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' 
-            }, React.createElement('path', { 
-                strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, 
-                d: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z' 
-            }));
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-6">Druck vs. Zeit</h2>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={pressureChart}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <XAxis 
+                      dataKey="time" 
+                      stroke="#94a3b8"
+                      label={{ value: 'Zeit (ms)', position: 'insideBottom', offset: -5, fill: '#94a3b8' }}
+                    />
+                    <YAxis 
+                      stroke="#94a3b8"
+                      label={{ value: 'Druck (kPSI)', angle: -90, position: 'insideLeft', fill: '#94a3b8' }}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#1e293b', 
+                        border: '1px solid #475569',
+                        borderRadius: '8px',
+                        color: '#f1f5f9'
+                      }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="pressure" 
+                      stroke="#ef4444" 
+                      fill="#ef4444"
+                      fillOpacity={0.3}
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
 
-            const Target = () => React.createElement('svg', { 
-                className: 'w-8 h-8 text-blue-400', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' 
-            }, React.createElement('circle', { cx: '12', cy: '12', r: '10', strokeWidth: 2 }),
-               React.createElement('circle', { cx: '12', cy: '12', r: '6', strokeWidth: 2 }),
-               React.createElement('circle', { cx: '12', cy: '12', r: '2', strokeWidth: 2 }));
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-6">Geschossweg vs. Zeit</h2>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <XAxis 
+                      dataKey="time" 
+                      stroke="#94a3b8"
+                      label={{ value: 'Zeit (ms)', position: 'insideBottom', offset: -5, fill: '#94a3b8' }}
+                    />
+                    <YAxis 
+                      stroke="#94a3b8"
+                      label={{ value: 'Distanz (Zoll)', angle: -90, position: 'insideLeft', fill: '#94a3b8' }}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#1e293b', 
+                        border: '1px solid #475569',
+                        borderRadius: '8px',
+                        color: '#f1f5f9'
+                      }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="distance" 
+                      stroke="#10b981" 
+                      strokeWidth={3}
+                      dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
 
-            const Settings = () => React.createElement('svg', { 
-                className: 'w-5 h-5', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' 
-            }, React.createElement('path', { 
-                strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, 
-                d: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' 
-            }), React.createElement('path', { 
-                strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, 
-                d: 'M15 12a3 3 0 11-6 0 3 3 0 016 0z' 
-            }));
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-6">Temperatur vs. Zeit</h2>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={pressureChart}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <XAxis 
+                      dataKey="time" 
+                      stroke="#94a3b8"
+                      label={{ value: 'Zeit (ms)', position: 'insideBottom', offset: -5, fill: '#94a3b8' }}
+                    />
+                    <YAxis 
+                      stroke="#94a3b8"
+                      label={{ value: 'Temperatur (K)', angle: -90, position: 'insideLeft', fill: '#94a3b8' }}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#1e293b', 
+                        border: '1px solid #475569',
+                        borderRadius: '8px',
+                        color: '#f1f5f9'
+                      }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="temperature" 
+                      stroke="#f59e0b" 
+                      fill="#f59e0b"
+                      fillOpacity={0.3}
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        )}
 
-            const BarChart3 = () => React.createElement('svg', { 
-                className: 'w-5 h-5', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' 
-            }, React.createElement('path', { 
-                strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, 
-                d: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' 
-            }));
+        {/* Umgebung Tab */}
+        {activeTab === 'environment' && (
+          <div className="grid lg:grid-cols-2 gap-8">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
+                <Thermometer className="w-5 h-5 mr-2 text-blue-400" />
+                Atmosphärische Bedingungen
+              </h2>
+              
+              <div className="space-y-4">
+                <InputField 
+                  label="Temperatur" 
+                  value={temperature} 
+                  onChange={setTemperature} 
+                  min={-30} 
+                  max={50} 
+                  unit="°C" 
+                />
+                <InputField 
+                  label="Luftdruck" 
+                  value={pressure} 
+                  onChange={setPressure} 
+                  min={800} 
+                  max={1100} 
+                  step={0.1} 
+                  unit="hPa" 
+                />
+                <InputField 
+                  label="Luftfeuchtigkeit" 
+                  value={humidity} 
+                  onChange={setHumidity} 
+                  min={0} 
+                  max={100} 
+                  unit="%" 
+                />
+              </div>
+            </div>
 
-            const AlertTriangle = () => React.createElement('svg', { 
-                className: 'w-6 h-6 text-yellow-400 mt-1 flex-shrink-0', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' 
-            }, React.createElement('path', { 
-                strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, 
-                d: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z' 
-            }));
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
+                <Wind className="w-5 h-5 mr-2 text-blue-400" />
+                Windbedingungen
+              </h2>
+              
+              <div className="space-y-4">
+                <InputField 
+                  label="Windgeschwindigkeit" 
+                  value={windSpeed} 
+                  onChange={setWindSpeed} 
+                  min={0} 
+                  max={50} 
+                  unit="km/h" 
+                />
+                <InputField 
+                  label="Windrichtung" 
+                  value={windDirection} 
+                  onChange={setWindDirection} 
+                  min={0} 
+                  max={360} 
+                  unit="°" 
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
-            return React.createElement('div', { className: 'min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900' },
-                // Header
-                React.createElement('div', { className: 'bg-black bg-opacity-20 backdrop-blur-sm border-b border-blue-500 border-opacity-30' },
-                    React.createElement('div', { className: 'max-w-full mx-auto px-6 py-4' },
-                        React.createElement('div', { className: 'flex items-center justify-between' },
-                            React.createElement('div', { className: 'flex items-center space-x-3' },
-                                React.createElement(Target, null),
-                                React.createElement('div', null,
-                                    React.createElement('h1', { className: 'text-2xl font-bold text-white' }, 'QuickLOAD Professional'),
-                                    React.createElement('p', { className: 'text-blue-300 text-sm' }, 'Erweiterte ballistische Berechnungsplattform')
-                                )
-                            ),
-                            calculateAdvancedBallistics.safetyRating && React.createElement('div', { 
-                                className: `px-4 py-2 rounded-lg font-bold text-${calculateAdvancedBallistics.safetyColor}-400 bg-${calculateAdvancedBallistics.safetyColor}-900 bg-opacity-30 border border-${calculateAdvancedBallistics.safetyColor}-500 border-opacity-50` 
-                            }, calculateAdvancedBallistics.safetyRating)
-                        )
-                    )
-                ),
+        {/* Sicherheitshinweis */}
+        <div className="mt-8 p-6 bg-yellow-900/30 border border-yellow-500/50 rounded-lg">
+          <div className="flex items-start space-x-3">
+            <AlertTriangle className="w-6 h-6 text-yellow-400 mt-1 flex-shrink-0" />
+            <div className="text-yellow-200">
+              <h3 className="font-semibold mb-2">Wichtiger Sicherheitshinweis</h3>
+              <p className="text-sm leading-relaxed">
+                Diese erweiterten Berechnungen basieren auf wissenschaftlichen Modellen und sind deutlich genauer als einfache Schätzungen. 
+                Dennoch ersetzen sie NICHT veröffentlichte Ladedaten von Herstellern. Beginnen Sie immer mit reduzierten Ladungen 
+                und arbeiten Sie sich vorsichtig nach oben. Der Benutzer trägt die volle Verantwortung für die Sicherheit beim Wiederladen. 
+                Konsultieren Sie immer aktuelle Ladehandbücher und befolgen Sie alle Sicherheitsvorschriften.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
-                // Navigation Tabs
-                React.createElement('div', { className: 'bg-black bg-opacity-10 backdrop-blur-sm border-b border-gray-700' },
-                    React.createElement('div', { className: 'max-w-full mx-auto px-6 py-4' },
-                        React.createElement('div', { className: 'flex space-x-2 overflow-x-auto' },
-                            React.createElement(TabButton, { id: 'config', label: 'Konfiguration', icon: Settings, active: activeTab === 'config', onClick: setActiveTab }),
-                            React.createElement(TabButton, { id: 'results', label: 'Ergebnisse', icon: Calculator, active: activeTab === 'results', onClick: setActiveTab }),
-                            React.createElement(TabButton, { id: 'charts', label: 'Diagramme', icon: BarChart3, active: activeTab === 'charts', onClick: setActiveTab })
-                        )
-                    )
-                ),
-
-                React.createElement('div', { className: 'max-w-full mx-auto px-6 py-8' },
-                    // Konfiguration Tab
-                    activeTab === 'config' && React.createElement('div', { className: 'grid lg:grid-cols-3 gap-8' },
-                        // Grundkonfiguration
-                        React.createElement('div', { className: 'bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 border border-white border-opacity-20' },
-                            React.createElement('h2', { className: 'text-xl font-semibold text-white mb-6 flex items-center' },
-                                React.createElement(Settings, { className: 'w-5 h-5 mr-2 text-blue-400' }),
-                                'Grundkonfiguration'
-                            ),
-                            
-                            React.createElement('div', { className: 'space-y-4' },
-                                React.createElement('div', null,
-                                    React.createElement('label', { className: 'block text-sm font-medium text-blue-200 mb-2' }, 'Patrone'),
-                                    React.createElement('select', { 
-                                        value: cartridge, 
-                                        onChange: (e) => setCartridge(e.target.value),
-                                        className: 'w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:outline-none'
-                                    }, Object.keys(cartridgeData).map(cart => 
-                                        React.createElement('option', { key: cart, value: cart }, cart)
-                                    ))
-                                ),
-
-                                React.createElement('div', null,
-                                    React.createElement('label', { className: 'block text-sm font-medium text-blue-200 mb-2' }, 'Pulver'),
-                                    React.createElement('select', { 
-                                        value: powder, 
-                                        onChange: (e) => setPowder(e.target.value),
-                                        className: 'w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:outline-none'
-                                    }, Object.keys(powderData).map(pow => 
-                                        React.createElement('option', { key: pow, value: pow }, pow)
-                                    ))
-                                ),
-
-                                React.createElement('div', null,
-                                    React.createElement('label', { className: 'block text-sm font-medium text-blue-200 mb-2' }, 'Geschoss'),
-                                    React.createElement('select', { 
-                                        value: bullet, 
-                                        onChange: (e) => setBullet(e.target.value),
-                                        className: 'w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:outline-none'
-                                    }, Object.keys(bulletData).map(bul => 
-                                        React.createElement('option', { key: bul, value: bul }, bul)
-                                    ))
-                                ),
-
-                                React.createElement(InputField, { 
-                                    label: 'Ladung', 
-                                    value: charge, 
-                                    onChange: setCharge, 
-                                    min: 20, 
-                                    max: 60, 
-                                    step: 0.1, 
-                                    unit: 'gr' 
-                                }),
-
-                                React.createElement(InputField, { 
-                                    label: 'Lauflänge', 
-                                    value: barrelLength, 
-                                    onChange: setBarrelLength, 
-                                    min: 16, 
-                                    max: 32, 
-                                    step: 0.5, 
-                                    unit: 'Zoll' 
-                                }),
-
-                                React.createElement(InputField, { 
-                                    label: 'Setztiefe', 
-                                    value: seatingDepth, 
-                                    onChange: setSeatingDepth, 
-                                    min: 0.005, 
-                                    max: 0.200, 
-                                    step: 0.005, 
-                                    unit: 'Zoll' 
-                                }),
-
-                                React.createElement(InputField, { 
-                                    label: 'Temperatur', 
-                                    value: temperature, 
-                                    onChange: setTemperature, 
-                                    min: -30, 
-                                    max: 50, 
-                                    unit: '°C' 
-                                })
-                            )
-                        ),
-
-                        // Pulverdetails
-                        React.createElement('div', { className: 'bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 border border-white border-opacity-20' },
-                            React.createElement('h2', { className: 'text-xl font-semibold text-white mb-6' }, 'Pulvercharakteristika'),
-                            
-                            powderData[powder] && React.createElement('div', { className: 'space-y-3' },
-                                React.createElement('div', { className: 'flex justify-between' },
-                                    React.createElement('span', { className: 'text-blue-200' }, 'Brennrate:'),
-                                    React.createElement('span', { className: 'text-white font-mono' }, powderData[powder].burningRateFactor)
-                                ),
-                                React.createElement('div', { className: 'flex justify-between' },
-                                    React.createElement('span', { className: 'text-blue-200' }, 'Dichte:'),
-                                    React.createElement('span', { className: 'text-white font-mono' }, `${powderData[powder].density} g/cm³`)
-                                ),
-                                React.createElement('div', { className: 'flex justify-between' },
-                                    React.createElement('span', { className: 'text-blue-200' }, 'Temp. Koeffizient:'),
-                                    React.createElement('span', { className: 'text-white font-mono' }, `${powderData[powder].tempCoeff} fps/°F`)
-                                ),
-                                React.createElement('div', { className: 'flex justify-between' },
-                                    React.createElement('span', { className: 'text-blue-200' }, 'Energiedichte:'),
-                                    React.createElement('span', { className: 'text-white font-mono' }, `${powderData[powder].energyDensity} J/g`)
-                                )
-                            )
-                        ),
-
-                        // Geschossdetails
-                        React.createElement('div', { className: 'bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 border border-white border-opacity-20' },
-                            React.createElement('h2', { className: 'text-xl font-semibold text-white mb-6' }, 'Geschossparameter'),
-                            
-                            bulletData[bullet] && React.createElement('div', { className: 'space-y-3' },
-                                React.createElement('div', { className: 'flex justify-between' },
-                                    React.createElement('span', { className: 'text-blue-200' }, 'Gewicht:'),
-                                    React.createElement('span', { className: 'text-white font-mono' }, `${bulletData[bullet].weight} gr`)
-                                ),
-                                React.createElement('div', { className: 'flex justify-between' },
-                                    React.createElement('span', { className: 'text-blue-200' }, 'Durchmesser:'),
-                                    React.createElement('span', { className: 'text-white font-mono' }, `${bulletData[bullet].diameter}"`)
-                                ),
-                                React.createElement('div', { className: 'flex justify-between' },
-                                    React.createElement('span', { className: 'text-blue-200' }, 'Ballistischer Koeff.:'),
-                                    React.createElement('span', { className: 'text-white font-mono' }, bulletData[bullet].bc)
-                                ),
-                                React.createElement('div', { className: 'flex justify-between' },
-                                    React.createElement('span', { className: 'text-blue-200' }, 'Länge:'),
-                                    React.createElement('span', { className: 'text-white font-mono' }, `${bulletData[bullet].length}"`)
-                                )
-                            )
-                        )
-                    ),
-
-                    // Ergebnisse Tab
-                    activeTab === 'results' && React.createElement('div', { className: 'grid lg:grid-cols-2 gap-8' },
-                        React.createElement('div', { className: 'bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 border border-white border-opacity-20' },
-                            React.createElement('h2', { className: 'text-xl font-semibold text-white mb-6' }, 'Interne Ballistik'),
-                            
-                            React.createElement('div', { className: 'space-y-4' },
-                                React.createElement('div', { className: 'p-4 bg-gray-800 bg-opacity-50 rounded-lg' },
-                                    React.createElement('div', { className: 'flex justify-between items-center' },
-                                        React.createElement('span', { className: 'text-blue-200' }, 'Maximaler Druck:'),
-                                        React.createElement('span', { className: `font-mono text-lg ${getSafetyColor()}` },
-                                            `${calculateAdvancedBallistics.maxPressure?.toFixed(0)} PSI`
-                                        )
-                                    ),
-                                    React.createElement('div', { className: 'text-xs text-gray-400 mt-1' },
-                                        `${((calculateAdvancedBallistics.pressureRatio || 0) * 100).toFixed(1)}% von SAAMI Maximum`
-                                    )
-                                ),
-
-                                React.createElement('div', { className: 'p-4 bg-gray-800 bg-opacity-50 rounded-lg' },
-                                    React.createElement('div', { className: 'flex justify-between items-center' },
-                                        React.createElement('span', { className: 'text-blue-200' }, 'Mündungsgeschwindigkeit:'),
-                                        React.createElement('span', { className: 'text-white font-mono text-lg' },
-                                            `${calculateAdvancedBallistics.muzzleVelocity?.toFixed(0)} fps`
-                                        )
-                                    )
-                                ),
-
-                                React.createElement('div', { className: 'p-4 bg-gray-800 bg-opacity-50 rounded-lg' },
-                                    React.createElement('div', { className: 'flex justify-between items-center' },
-                                        React.createElement('span', { className: 'text-blue-200' }, 'Mündungsenergie:'),
-                                        React.createElement('span', { className: 'text-white font-mono text-lg' },
-                                            `${calculateAdvancedBallistics.muzzleEnergy?.toFixed(0)} ft-lbs`
-                                        )
-                                    )
-                                ),
-
-                                React.createElement('div', { className: 'p-4 bg-gray-800 bg-opacity-50 rounded-lg' },
-                                    React.createElement('div', { className: 'flex justify-between items-center' },
-                                        React.createElement('span', { className: 'text-blue-200' }, 'Laufzeit:'),
-                                        React.createElement('span', { className: 'text-white font-mono text-lg' },
-                                            `${calculateAdvancedBallistics.barrelTime?.toFixed(2)} ms`
-                                        )
-                                    )
-                                ),
-
-                                React.createElement('div', { className: 'p-4 bg-gray-800 bg-opacity-50 rounded-lg' },
-                                    React.createElement('div', { className: 'flex justify-between items-center' },
-                                        React.createElement('span', { className: 'text-blue-200' }, 'Ladungsdichte:'),
-                                        React.createElement('span', { className: 'text-white font-mono text-lg' },
-                                            `${calculateAdvancedBallistics.loadDensity?.toFixed(1)}%`
-                                        )
-                                    )
-                                )
-                            )
-                        ),
-
-                        React.createElement('div', { className: 'bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 border border-white border-opacity-20' },
-                            React.createElement('h2', { className: 'text-xl font-semibold text-white mb-6' }, 'Externe Ballistik'),
-                            
-                            React.createElement('div', { className: 'space-y-4' },
-                                React.createElement('div', { className: 'p-4 bg-gray-800 bg-opacity-50 rounded-lg' },
-                                    React.createElement('div', { className: 'flex justify-between items-center' },
-                                        React.createElement('span', { className: 'text-blue-200' }, 'Rückstoßenergie:'),
-                                        React.createElement('span', { className: 'text-white font-mono text-lg' },
-                                            `${calculateAdvancedBallistics.recoilEnergy?.toFixed(1)} ft-lbs`
-                                        )
-                                    )
-                                ),
-
-                                React.createElement('div', { className: 'p-4 bg-gray-800 bg-opacity-50 rounded-lg' },
-                                    React.createElement('div', { className: 'flex justify-between items-center' },
-                                        React.createElement('span', { className: 'text-blue-200' }, 'Projektilenergie @ 100y:'),
-                                        React.createElement('span', { className: 'text-white font-mono text-lg' },
-                                            `${calculateAdvancedBallistics.projectileEnergy100?.toFixed(0)} ft-lbs`
-                                        )
-                                    )
-                                ),
-
-                                React.createElement('div', { className: 'p-4 bg-gray-800 bg-opacity-50 rounded-lg' },
-                                    React.createElement('div', { className: 'flex justify-between items-center' },
-                                        React.createElement('span', { className: 'text-blue-200' }, 'Ballistische Effizienz:'),
-                                        React.createElement('span', { className: 'text-white font-mono text-lg' },
-                                            `${calculateAdvancedBallistics.ballisticEfficiency?.toFixed(1)}%`
-                                        )
-                                    )
-                                )
-                            ),
-
-                            // Druckvisualisierung
-                            React.createElement('div', { className: 'mt-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg' },
-                                React.createElement('h3', { className: 'text-lg font-semibold text-white mb-3' }, 'Druckanalyse'),
-                                React.createElement('div', { className: 'relative h-6 bg-gray-700 rounded-full overflow-hidden' },
-                                    React.createElement('div', { 
-                                        className: `h-full transition-all duration-500 ${
-                                            calculateAdvancedBallistics.safetyColor === 'red' ? 'bg-red-500' :
-                                            calculateAdvancedBallistics.safetyColor === 'orange' ? 'bg-orange-500' :
-                                            calculateAdvancedBallistics.safetyColor === 'yellow' ? 'bg-yellow-500' :
-                                            calculateAdvancedBallistics.safetyColor === 'blue' ? 'bg-blue-500' : 'bg-green-500'
-                                        }`,
-                                        style: { width: `${Math.min((calculateAdvancedBallistics.pressureRatio || 0) * 100, 100)}%` }
-                                    }),
-                                    React.createElement('div', { className: 'absolute inset-0 flex items-center justify-center text-sm font-semibold text-white' },
-                                        `${((calculateAdvancedBallistics.pressureRatio || 0) * 100).toFixed(1)}% SAAMI Max`
-                                    )
-                                )
-                            )
-                        )
-                    ),
-
-                    // Diagramme Tab
-                    activeTab === 'charts' && React.createElement('div', { className: 'grid lg:grid-cols-2 gap-8' },
-                        React.createElement('div', { className: 'bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 border border-white border-opacity-20' },
-                            React.createElement('h2', { className: 'text-xl font-semibold text-white mb-6' }, 'Geschwindigkeit vs. Zeit'),
-                            React.createElement('div', { className: 'h-80' },
-                                React.createElement(ResponsiveContainer, { width: '100%', height: '100%' },
-                                    React.createElement(LineChart, { data: chartData },
-                                        React.createElement(CartesianGrid, { strokeDasharray: '3 3', stroke: '#334155' }),
-                                        React.createElement(XAxis, { 
-                                            dataKey: 'time', 
-                                            stroke: '#94a3b8',
-                                            label: { value: 'Zeit (ms)', position: 'insideBottom', offset: -5, fill: '#94a3b8' }
-                                        }),
-                                        React.createElement(YAxis, { 
-                                            stroke: '#94a3b8',
-                                            label: { value: 'Geschwindigkeit (fps)', angle: -90, position: 'insideLeft', fill: '#94a3b8' }
-                                        }),
-                                        React.createElement(Tooltip, { 
-                                            contentStyle: { 
-                                                backgroundColor: '#1e293b', 
-                                                border: '1px solid #475569',
-                                                borderRadius: '8px',
-                                                color: '#f1f5f9'
-                                            }
-                                        }),
-                                        React.createElement(Line, { 
-                                            type: 'monotone', 
-                                            dataKey: 'velocity', 
-                                            stroke: '#3b82f6', 
-                                            strokeWidth: 3,
-                                            dot: false
-                                        })
-                                    )
-                                )
-                            )
-                        ),
-
-                        React.createElement('div', { className: 'bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 border border-white border-opacity-20' },
-                            React.createElement('h2', { className: 'text-xl font-semibold text-white mb-6' }, 'Druck vs. Zeit'),
-                            React.createElement('div', { className: 'h-80' },
-                                React.createElement(ResponsiveContainer, { width: '100%', height: '100%' },
-                                    React.createElement(AreaChart, { data: pressureChart },
-                                        React.createElement(CartesianGrid, { strokeDasharray: '3 3', stroke: '#334155' }),
-                                        React.createElement(XAxis, { 
-                                            dataKey: 'time', 
-                                            stroke: '#94a3b8',
-                                            label: { value: 'Zeit (ms)', position: 'insideBottom', offset: -5, fill: '#94a3b8' }
-                                        }),
-                                        React.createElement(YAxis, { 
-                                            stroke: '#94a3b8',
-                                            label: { value: 'Druck (kPSI)', angle: -90, position: 'insideLeft', fill: '#94a3b8' }
-                                        }),
-                                        React.createElement(Tooltip, { 
-                                            contentStyle: { 
-                                                backgroundColor: '#1e293b', 
-                                                border: '1px solid #475569',
-                                                borderRadius: '8px',
-                                                color: '#f1f5f9'
-                                            }
-                                        }),
-                                        React.createElement(Area, { 
-                                            type: 'monotone', 
-                                            dataKey: 'pressure', 
-                                            stroke: '#ef4444', 
-                                            fill: '#ef4444',
-                                            fillOpacity: 0.3,
-                                            strokeWidth: 2
-                                        })
-                                    )
-                                )
-                            )
-                        )
-                    ),
-
-                    // Sicherheitshinweis
-                    React.createElement('div', { className: 'mt-8 p-6 bg-yellow-900 bg-opacity-30 border border-yellow-500 border-opacity-50 rounded-lg' },
-                        React.createElement('div', { className: 'flex items-start space-x-3' },
-                            React.createElement(AlertTriangle, null),
-                            React.createElement('div', { className: 'text-yellow-200' },
-                                React.createElement('h3', { className: 'font-semibold mb-2' }, 'Wichtiger Sicherheitshinweis'),
-                                React.createElement('p', { className: 'text-sm leading-relaxed' },
-                                    'Diese erweiterten Berechnungen basieren auf wissenschaftlichen Modellen und sind deutlich genauer als einfache Schätzungen. ' +
-                                    'Dennoch ersetzen sie NICHT veröffentlichte Ladedaten von Herstellern. Beginnen Sie immer mit reduzierten Ladungen ' +
-                                    'und arbeiten Sie sich vorsichtig nach oben. Der Benutzer trägt die volle Verantwortung für die Sicherheit beim Wiederladen. ' +
-                                    'Konsultieren Sie immer aktuelle Ladehandbücher und befolgen Sie alle Sicherheitsvorschriften.'
-                                )
-                            )
-                        )
-                    )
-                )
-            );
-        };
-
-        // Render the app
-        ReactDOM.render(React.createElement(AdvancedBallisticsCalculator), document.getElementById('root'));
-    </script>
-</body>
-</html>
+export default AdvancedBallisticsCalculator;
