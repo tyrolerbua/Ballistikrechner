@@ -171,6 +171,16 @@
             transform: translateY(-1px);
         }
 
+        .custom-input {
+            border-color: #4a8b5c;
+            background: #f8fdf8;
+        }
+
+        .custom-input::placeholder {
+            color: #6b8e6b;
+            font-style: italic;
+        }
+
         .calculate-btn {
             background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%);
             color: white;
@@ -221,19 +231,19 @@
         }
 
         .result-card {
-            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            background: linear-gradient(135deg, #1e3e1e 0%, #2d5f3f 50%, #3e7b3e 100%);
             color: white;
             padding: 24px;
             border-radius: 16px;
             text-align: center;
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 12px 32px rgba(46, 69, 48, 0.15);
             transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(154, 205, 50, 0.1);
         }
 
         .result-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 20px 48px rgba(46, 69, 48, 0.2);
         }
 
         .result-value {
@@ -263,7 +273,7 @@
             flex-wrap: wrap;
             margin-bottom: 24px;
             gap: 8px;
-            background: rgba(15, 23, 42, 0.05);
+            background: rgba(30, 62, 30, 0.05);
             padding: 8px;
             border-radius: 16px;
         }
@@ -275,7 +285,7 @@
             cursor: pointer;
             border-radius: 12px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            color: #475569;
+            color: #365c39;
             font-weight: 600;
             font-size: 0.875rem;
             text-transform: uppercase;
@@ -283,14 +293,14 @@
         }
 
         .tab-btn.active {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            background: linear-gradient(135deg, #2d5f3f 0%, #4a8b5c 100%);
             color: white;
-            box-shadow: 0 8px 24px rgba(5, 150, 105, 0.25);
+            box-shadow: 0 8px 24px rgba(74, 139, 92, 0.25);
         }
 
         .tab-btn:not(.active):hover {
-            background: rgba(5, 150, 105, 0.1);
-            border-color: #059669;
+            background: rgba(74, 139, 92, 0.1);
+            border-color: #4a8b5c;
         }
 
         .chart-area {
@@ -299,8 +309,8 @@
             padding: 32px;
             height: 500px;
             position: relative;
-            border: 1px solid rgba(148, 163, 184, 0.2);
-            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(106, 153, 78, 0.2);
+            box-shadow: inset 0 2px 8px rgba(46, 69, 48, 0.05);
         }
 
         canvas {
@@ -331,7 +341,7 @@
 
         .category-badge {
             display: inline-block;
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            background: linear-gradient(135deg, #2d5f3f 0%, #4a8b5c 100%);
             color: white;
             padding: 6px 16px;
             border-radius: 12px;
@@ -343,15 +353,15 @@
         }
 
         .advanced-section {
-            background: linear-gradient(135deg, rgba(5, 150, 105, 0.05) 0%, rgba(4, 120, 87, 0.05) 100%);
-            border: 1px solid rgba(5, 150, 105, 0.2);
+            background: linear-gradient(135deg, rgba(45, 95, 63, 0.05) 0%, rgba(74, 139, 92, 0.05) 100%);
+            border: 1px solid rgba(74, 139, 92, 0.2);
             border-radius: 16px;
             padding: 24px;
             margin-top: 24px;
         }
 
         .advanced-section h3 {
-            color: #065f46;
+            color: #1e3e1e;
             margin-bottom: 20px;
             font-weight: 700;
             font-size: 1.125rem;
@@ -359,7 +369,7 @@
 
         .unit-display {
             font-size: 0.75rem;
-            color: #64748b;
+            color: #4a8b5c;
             margin-left: 8px;
             font-weight: 500;
         }
@@ -402,7 +412,7 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="cartridge">Jagdkaliber</label>
-                        <select id="cartridge">
+                        <select id="cartridge" onchange="toggleCustomCartridge()">
                             <optgroup label="Klassische Jagdkaliber">
                                 <option value="308win">.308 Winchester</option>
                                 <option value="30-06">.30-06 Springfield</option>
@@ -425,12 +435,14 @@
                                 <option value="416rem">.416 Remington</option>
                                 <option value="458wm">.458 Winchester</option>
                             </optgroup>
+                            <option value="custom">--- Benutzerdefiniert ---</option>
                         </select>
+                        <input type="text" id="customCartridge" placeholder="Kaliber manuell eingeben..." style="display: none; margin-top: 8px;">
                     </div>
                     
                     <div class="form-group">
                         <label for="bullet">Geschoss-Konstruktion</label>
-                        <select id="bullet">
+                        <select id="bullet" onchange="toggleCustomBullet()">
                             <optgroup label="Jagdgeschosse">
                                 <option value="150psp">150gr Teilmantel Weichspitz</option>
                                 <option value="165psp">165gr Teilmantel Weichspitz</option>
@@ -447,7 +459,9 @@
                                 <option value="150mono">150gr Barnes TSX</option>
                                 <option value="168mono">168gr GMX Monolithisch</option>
                             </optgroup>
+                            <option value="custom">--- Benutzerdefiniert ---</option>
                         </select>
+                        <input type="text" id="customBullet" placeholder="Geschoss manuell eingeben..." style="display: none; margin-top: 8px;">
                     </div>
 
                     <div class="form-group">
@@ -547,7 +561,7 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="powder">Pulvertyp</label>
-                        <select id="powder">
+                        <select id="powder" onchange="toggleCustomPowder()">
                             <optgroup label="Vihtavuori N-Serie">
                                 <option value="n140">N140 (mittelschnell brennend)</option>
                                 <option value="n150">N150 (mittlere Brennrate)</option>
@@ -572,7 +586,9 @@
                                 <option value="rl22">RL-22 (Magnum)</option>
                                 <option value="rl25">RL-25 (Ultra-Magnum)</option>
                             </optgroup>
+                            <option value="custom">--- Benutzerdefiniert ---</option>
                         </select>
+                        <input type="text" id="customPowder" placeholder="Pulvertyp manuell eingeben..." style="display: none; margin-top: 8px;">
                     </div>
 
                     <div class="form-group">
@@ -622,6 +638,17 @@
                         <div class="form-group">
                             <label for="covolume">Covolumen <span class="unit-display">l/kg</span></label>
                             <input type="number" id="covolume" value="1.000" step="0.001" min="0.500" max="2.000">
+                        </div>
+                    </div>
+                    
+                    <div class="form-grid" style="margin-top: 16px;">
+                        <div class="form-group full-width">
+                            <label style="color: #4a8b5c; font-weight: 700;">Hinweis für benutzerdefinierte Werte:</label>
+                            <p style="font-size: 0.875rem; color: #6b8e6b; line-height: 1.5; margin-top: 8px;">
+                                Bei der Verwendung benutzerdefinierter Kaliber, Geschosse oder Pulver müssen Sie alle relevanten Parameter manuell eingeben. 
+                                Die automatischen Voreinstellungen greifen nur bei den vordefinierten Auswahlmöglichkeiten. 
+                                Stellen Sie sicher, dass alle Werte korrekt und aus zuverlässigen Quellen stammen.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -751,7 +778,7 @@
         let chartData = {};
 
         function calculate() {
-            // Präzise Datenerfassung aller Parameter
+            // Präzise Datenerfassung aller Parameter mit benutzerdefinierten Werten
             const bulletWeight = parseFloat(document.getElementById('bulletWeight').value);
             const chargeWeight = parseFloat(document.getElementById('chargeWeight').value);
             const barrelLength = parseFloat(document.getElementById('barrelLength').value);
@@ -762,7 +789,9 @@
             const humidity = parseFloat(document.getElementById('humidity').value);
             const pressure = parseFloat(document.getElementById('pressure').value);
             const altitude = parseFloat(document.getElementById('altitude').value);
-            const powder = document.getElementById('powder').value;
+            const powder = getSelectedValue('powder', 'customPowder');
+            const cartridge = getSelectedValue('cartridge', 'customCartridge');
+            const bullet = getSelectedValue('bullet', 'customBullet');
             const bulletDiameter = parseFloat(document.getElementById('bulletDiameter').value);
             const seatingDepth = parseFloat(document.getElementById('seatingDepth').value);
             const crossSectionalBoreArea = parseFloat(document.getElementById('crossSectionalBoreArea').value);
@@ -775,8 +804,23 @@
             const humidityFactor = 1 - (humidity - 50) * 0.00025;
             const densityAltitude = altitude + (temperature - 15) * 120;
             
-            // Pulvereigenschaften abrufen
-            const powderProps = powderData[powder];
+            // Pulvereigenschaften abrufen oder Standardwerte für benutzerdefinierte Pulver verwenden
+            let powderProps;
+            if (powderData[powder]) {
+                powderProps = powderData[powder];
+            } else {
+                // Standardwerte für benutzerdefinierte Pulver
+                powderProps = {
+                    burnRate: parseFloat(document.getElementById('burningRateFactor').value) * 2.5 || 0.85,
+                    density: parseFloat(document.getElementById('propellantDensity').value) || 0.95,
+                    energy: parseFloat(document.getElementById('heatOfExplosion').value) || 3800,
+                    ba: parseFloat(document.getElementById('burningRateFactor').value) || 0.388,
+                    progressiveLimit: parseFloat(document.getElementById('progressiveBurningLimit').value) || 21,
+                    covolume: parseFloat(document.getElementById('covolume').value) || 1.0
+                };
+                
+                console.log('Benutzerdefiniertes Pulver verwendet:', powder, powderProps);
+            }
             
             // Präzise Ladungsdichte-Berechnung
             const loadDensity = (chargeWeight * powderProps.density) / usableCaseCapacity * 100;
@@ -902,7 +946,7 @@
             const chartHeight = rect.height - 2 * padding;
             
             // Professionelles Koordinatensystem
-            ctx.strokeStyle = '#1e293b';
+            ctx.strokeStyle = '#1e3e1e';
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(padding, padding);
@@ -911,7 +955,7 @@
             ctx.stroke();
             
             // Fein abgestuftes Gitter
-            ctx.strokeStyle = '#e2e8f0';
+            ctx.strokeStyle = '#c7d2cc';
             ctx.lineWidth = 0.5;
             for (let i = 1; i <= 20; i++) {
                 const x = padding + (i / 20) * chartWidth;
@@ -919,10 +963,10 @@
                 
                 if (i % 4 === 0) {
                     ctx.lineWidth = 1;
-                    ctx.strokeStyle = '#cbd5e1';
+                    ctx.strokeStyle = '#a3b8a7';
                 } else {
                     ctx.lineWidth = 0.5;
-                    ctx.strokeStyle = '#e2e8f0';
+                    ctx.strokeStyle = '#c7d2cc';
                 }
                 
                 ctx.beginPath();
@@ -944,14 +988,14 @@
             
             // Professionelle Farbgebung
             const colors = {
-                'pressure': '#dc2626',
-                'velocity': '#059669', 
-                'energy': '#7c2d12',
+                'pressure': '#b91c1c',
+                'velocity': '#2d5f3f', 
+                'energy': '#92400e',
                 'trajectory': '#1e40af'
             };
             
             // Hauptgraph mit Antialiasing
-            ctx.strokeStyle = colors[currentChart] || '#1e293b';
+            ctx.strokeStyle = colors[currentChart] || '#1e3e1e';
             ctx.lineWidth = 3;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
@@ -971,7 +1015,7 @@
             ctx.stroke();
             
             // Professionelle Beschriftung
-            ctx.fillStyle = '#1e293b';
+            ctx.fillStyle = '#1e3e1e';
             ctx.font = 'bold 16px system-ui';
             ctx.textAlign = 'center';
             
@@ -1059,6 +1103,62 @@
                 });
             }
         });
+
+        // Funktionen für benutzerdefinierte Eingaben
+        function toggleCustomCartridge() {
+            const select = document.getElementById('cartridge');
+            const customInput = document.getElementById('customCartridge');
+            
+            if (select.value === 'custom') {
+                customInput.style.display = 'block';
+                customInput.classList.add('custom-input');
+                customInput.focus();
+            } else {
+                customInput.style.display = 'none';
+                customInput.classList.remove('custom-input');
+            }
+        }
+
+        function toggleCustomBullet() {
+            const select = document.getElementById('bullet');
+            const customInput = document.getElementById('customBullet');
+            
+            if (select.value === 'custom') {
+                customInput.style.display = 'block';
+                customInput.classList.add('custom-input');
+                customInput.focus();
+            } else {
+                customInput.style.display = 'none';
+                customInput.classList.remove('custom-input');
+            }
+        }
+
+        function toggleCustomPowder() {
+            const select = document.getElementById('powder');
+            const customInput = document.getElementById('customPowder');
+            
+            if (select.value === 'custom') {
+                customInput.style.display = 'block';
+                customInput.classList.add('custom-input');
+                customInput.focus();
+                
+                // Zeige Hinweis für manuelle Pulver-Parameter
+                alert('Hinweis: Bei benutzerdefinierten Pulvern müssen Sie die erweiterten Parameter manuell anpassen, da keine Voreinstellungen verfügbar sind.');
+            } else {
+                customInput.style.display = 'none';
+                customInput.classList.remove('custom-input');
+            }
+        }
+
+        function getSelectedValue(selectId, customInputId) {
+            const select = document.getElementById(selectId);
+            const customInput = document.getElementById(customInputId);
+            
+            if (select.value === 'custom') {
+                return customInput.value || select.value;
+            }
+            return select.value;
+        }
     </script>
 </body>
 </html>
